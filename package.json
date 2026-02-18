@@ -1,0 +1,45 @@
+{
+  "name": "clawra-zeroclaw",
+  "version": "1.0.0",
+  "description": "Add selfie superpowers to your ZeroClaw agent using xAI Grok Imagine",
+  "bin": {
+    "clawra-zeroclaw": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "skill/",
+    "templates/",
+    "SKILL.md",
+    "scripts/",
+    "assets/"
+  ],
+  "keywords": [
+    "zeroclaw",
+    "grok",
+    "imagine",
+    "xai",
+    "aurora",
+    "fal.ai",
+    "selfie",
+    "ai-agent",
+    "image-generation",
+    "messaging"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rikitrader/clawra-zeroclaw"
+  },
+  "homepage": "https://github.com/rikitrader/clawra-zeroclaw#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@fal-ai/client": "^1.2.0",
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.0"
+  }
+}
