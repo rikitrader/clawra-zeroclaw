@@ -2,10 +2,10 @@
 name = "clawra-zeroclaw"
 version = "1.0.0"
 edition = "2021"
-description = "Clawra selfie skill for ZeroClaw — xAI Grok Imagine image generation"
+description = "Selfie superpowers for ZeroClaw AI agents — OpenRouter image generation with 3-layer safety bypass"
 license = "MIT"
 repository = "https://github.com/rikitrader/clawra-zeroclaw"
-keywords = ["zeroclaw", "grok", "xai", "selfie", "ai-agent"]
+keywords = ["zeroclaw", "openrouter", "selfie", "ai-agent", "image-generation"]
 categories = ["command-line-utilities"]
 
 [[bin]]

@@ -1,42 +1,217 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1a1a2e"/>
-      <stop offset="100%" style="stop-color:#16213e"/>
+    <!-- Background gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a1a"/>
+      <stop offset="35%" style="stop-color:#111128"/>
+      <stop offset="100%" style="stop-color:#1a0a2e"/>
     </linearGradient>
-    <linearGradient id="claw" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#e94560"/>
-      <stop offset="100%" style="stop-color:#ff6b6b"/>
+    <!-- Claw slash gradient -->
+    <linearGradient id="claw-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff2d55"/>
+      <stop offset="50%" style="stop-color:#ff6b81"/>
+      <stop offset="100%" style="stop-color:#ff2d55"/>
     </linearGradient>
-    <linearGradient id="lens" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#533483"/>
-      <stop offset="100%" style="stop-color:#e94560"/>
+    <!-- Lens outer gradient -->
+    <linearGradient id="lens-outer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7b2ff7"/>
+      <stop offset="50%" style="stop-color:#ff2d55"/>
+      <stop offset="100%" style="stop-color:#7b2ff7"/>
     </linearGradient>
+    <!-- Lens inner gradient -->
+    <radialGradient id="lens-inner" cx="45%" cy="40%" r="50%">
+      <stop offset="0%" style="stop-color:#2a1a4e"/>
+      <stop offset="60%" style="stop-color:#120a28"/>
+      <stop offset="100%" style="stop-color:#0a0a1a"/>
+    </radialGradient>
+    <!-- Lens iris gradient -->
+    <radialGradient id="lens-iris" cx="42%" cy="38%" r="50%">
+      <stop offset="0%" style="stop-color:#c471f5"/>
+      <stop offset="40%" style="stop-color:#7b2ff7"/>
+      <stop offset="100%" style="stop-color:#ff2d55"/>
+    </radialGradient>
+    <!-- Camera body gradient -->
+    <linearGradient id="cam-body" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e1e3f"/>
+      <stop offset="100%" style="stop-color:#12122a"/>
+    </linearGradient>
+    <!-- Glow filter for neon effects -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-strong" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Shadow for camera -->
+    <filter id="cam-shadow" x="-10%" y="-10%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <!-- Subtle noise texture -->
+    <filter id="noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.03"/>
+      </feComponentTransfer>
+      <feBlend in="SourceGraphic" mode="overlay"/>
+    </filter>
+    <!-- Sparkle cross pattern -->
+    <symbol id="sparkle" viewBox="-10 -10 20 20">
+      <line x1="0" y1="-8" x2="0" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="-8" y1="0" x2="8" y2="0" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="-5" y1="-5" x2="5" y2="5" stroke="white" stroke-width="0.8" stroke-linecap="round"/>
+      <line x1="5" y1="-5" x2="-5" y2="5" stroke="white" stroke-width="0.8" stroke-linecap="round"/>
+    </symbol>
   </defs>
-  <!-- Background -->
-  <rect width="400" height="400" rx="48" fill="url(#bg)"/>
-  <!-- Camera body -->
-  <rect x="100" y="140" width="200" height="150" rx="20" fill="#0f3460" stroke="#e94560" stroke-width="3"/>
-  <!-- Lens ring -->
-  <circle cx="200" cy="215" r="50" fill="none" stroke="url(#lens)" stroke-width="6"/>
-  <circle cx="200" cy="215" r="35" fill="#1a1a2e" stroke="#533483" stroke-width="2"/>
-  <circle cx="200" cy="215" r="20" fill="url(#lens)" opacity="0.8"/>
-  <circle cx="190" cy="205" r="6" fill="white" opacity="0.4"/>
-  <!-- Flash -->
-  <rect x="260" y="155" width="20" height="12" rx="3" fill="#e94560" opacity="0.8"/>
-  <!-- Claw marks (3 diagonal slashes) -->
-  <g stroke="url(#claw)" stroke-width="5" stroke-linecap="round" opacity="0.9">
-    <line x1="80" y1="80" x2="140" y2="130"/>
-    <line x1="100" y1="70" x2="160" y2="120"/>
-    <line x1="120" y1="60" x2="180" y2="110"/>
+
+  <!-- Background with subtle gradient -->
+  <rect width="800" height="800" rx="64" fill="url(#bg-grad)"/>
+  <!-- Subtle grid overlay -->
+  <g opacity="0.03" stroke="white" stroke-width="0.5">
+    <line x1="0" y1="200" x2="800" y2="200"/>
+    <line x1="0" y1="400" x2="800" y2="400"/>
+    <line x1="0" y1="600" x2="800" y2="600"/>
+    <line x1="200" y1="0" x2="200" y2="800"/>
+    <line x1="400" y1="0" x2="400" y2="800"/>
+    <line x1="600" y1="0" x2="600" y2="800"/>
   </g>
-  <!-- Selfie sparkle -->
-  <g fill="#ff6b6b">
-    <circle cx="310" cy="100" r="4"/>
-    <circle cx="330" cy="80" r="2.5"/>
-    <circle cx="290" cy="85" r="3"/>
+
+  <!-- Ambient glow behind camera -->
+  <ellipse cx="400" cy="360" rx="220" ry="180" fill="#7b2ff7" opacity="0.06"/>
+  <ellipse cx="400" cy="360" rx="160" ry="130" fill="#ff2d55" opacity="0.04"/>
+
+  <!-- ══ CLAW MARKS (top-left, 3 diagonal slashes) ══ -->
+  <g filter="url(#glow)" opacity="0.95">
+    <!-- Slash 1 -->
+    <path d="M 120 100 Q 160 140 220 190" stroke="url(#claw-grad)" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M 222 192 L 230 185 L 226 198 Z" fill="#ff2d55"/>
+    <!-- Slash 2 -->
+    <path d="M 155 80 Q 195 120 260 175" stroke="url(#claw-grad)" stroke-width="9" stroke-linecap="round" fill="none"/>
+    <path d="M 262 177 L 270 169 L 267 183 Z" fill="#ff2d55"/>
+    <!-- Slash 3 -->
+    <path d="M 190 65 Q 230 105 300 160" stroke="url(#claw-grad)" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <path d="M 302 162 L 310 154 L 306 168 Z" fill="#ff2d55"/>
   </g>
-  <!-- Text -->
-  <text x="200" y="340" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="36" font-weight="700" fill="white" letter-spacing="2">CLAWRA</text>
-  <text x="200" y="365" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="400" fill="#e94560" letter-spacing="4">ZEROCLAW</text>
+  <!-- Scratch marks (thin lines following slashes) -->
+  <g stroke="#ff2d55" stroke-width="1" opacity="0.3" stroke-linecap="round">
+    <line x1="130" y1="115" x2="180" y2="160"/>
+    <line x1="165" y1="95" x2="215" y2="145"/>
+    <line x1="200" y1="80" x2="250" y2="130"/>
+  </g>
+
+  <!-- ══ CAMERA BODY ══ -->
+  <g filter="url(#cam-shadow)">
+    <!-- Main body -->
+    <rect x="180" y="250" width="440" height="270" rx="32" fill="url(#cam-body)" stroke="#2a2a5e" stroke-width="2"/>
+    <!-- Top accent bar -->
+    <rect x="180" y="250" width="440" height="6" rx="3" fill="#7b2ff7" opacity="0.4"/>
+    <!-- Viewfinder bump -->
+    <rect x="310" y="228" width="120" height="30" rx="8" fill="#1a1a3a" stroke="#2a2a5e" stroke-width="1.5"/>
+    <rect x="340" y="235" width="60" height="16" rx="4" fill="#0a0a1a" stroke="#3a3a6e" stroke-width="0.5"/>
+  </g>
+
+  <!-- ══ CAMERA LENS (main element) ══ -->
+  <!-- Outer ring with gradient -->
+  <circle cx="400" cy="375" r="95" fill="none" stroke="url(#lens-outer)" stroke-width="8" filter="url(#glow)"/>
+  <!-- Secondary ring -->
+  <circle cx="400" cy="375" r="82" fill="none" stroke="#2a2a5e" stroke-width="3"/>
+  <!-- Lens body -->
+  <circle cx="400" cy="375" r="72" fill="url(#lens-inner)"/>
+  <!-- Iris ring -->
+  <circle cx="400" cy="375" r="50" fill="none" stroke="url(#lens-iris)" stroke-width="4" opacity="0.8"/>
+  <!-- Inner iris -->
+  <circle cx="400" cy="375" r="38" fill="url(#lens-iris)" opacity="0.7"/>
+  <!-- Deep center -->
+  <circle cx="400" cy="375" r="22" fill="#0a0a1a"/>
+  <!-- Aperture blades (8-blade pattern) -->
+  <g opacity="0.15" fill="none" stroke="#c471f5" stroke-width="0.8">
+    <line x1="400" y1="340" x2="400" y2="350"/>
+    <line x1="400" y1="400" x2="400" y2="410"/>
+    <line x1="365" y1="375" x2="375" y2="375"/>
+    <line x1="425" y1="375" x2="435" y2="375"/>
+    <line x1="377" y1="352" x2="383" y2="358"/>
+    <line x1="417" y1="392" x2="423" y2="398"/>
+    <line x1="377" y1="398" x2="383" y2="392"/>
+    <line x1="417" y1="358" x2="423" y2="352"/>
+  </g>
+  <!-- Highlight reflection (glass effect) -->
+  <ellipse cx="385" cy="355" rx="14" ry="10" fill="white" opacity="0.25" transform="rotate(-25 385 355)"/>
+  <circle cx="378" cy="350" r="5" fill="white" opacity="0.4"/>
+  <circle cx="420" cy="395" r="3" fill="white" opacity="0.1"/>
+
+  <!-- ══ CAMERA DETAILS ══ -->
+  <!-- Flash unit -->
+  <rect x="520" y="272" width="42" height="22" rx="6" fill="#ff2d55" opacity="0.85"/>
+  <rect x="524" y="276" width="34" height="14" rx="4" fill="white" opacity="0.15"/>
+  <!-- Secondary sensor -->
+  <circle cx="540" cy="315" r="8" fill="#0a0a1a" stroke="#3a3a6e" stroke-width="1"/>
+  <circle cx="540" cy="315" r="4" fill="#1a1a3a"/>
+  <!-- Brand line on camera -->
+  <rect x="210" y="490" width="80" height="3" rx="1.5" fill="#ff2d55" opacity="0.4"/>
+  <!-- Grip texture (right side) -->
+  <g opacity="0.08" stroke="white" stroke-width="1">
+    <line x1="588" y1="280" x2="588" y2="490"/>
+    <line x1="594" y1="280" x2="594" y2="490"/>
+    <line x1="600" y1="280" x2="600" y2="490"/>
+    <line x1="606" y1="280" x2="606" y2="490"/>
+  </g>
+
+  <!-- ══ SELFIE SPARKLES (top-right cluster) ══ -->
+  <g filter="url(#glow)">
+    <use href="#sparkle" x="600" y="120" width="20" height="20" opacity="0.9"/>
+    <use href="#sparkle" x="650" y="90" width="14" height="14" opacity="0.6"/>
+    <use href="#sparkle" x="570" y="95" width="16" height="16" opacity="0.7"/>
+    <use href="#sparkle" x="640" y="150" width="12" height="12" opacity="0.5"/>
+  </g>
+  <!-- Small dots -->
+  <g fill="white" opacity="0.4">
+    <circle cx="560" cy="140" r="1.5"/>
+    <circle cx="680" cy="110" r="2"/>
+    <circle cx="620" cy="170" r="1"/>
+    <circle cx="690" cy="150" r="1.5"/>
+  </g>
+
+  <!-- ══ BOTTOM-LEFT ACCENT ══ -->
+  <g opacity="0.15" filter="url(#glow)">
+    <circle cx="120" cy="680" r="40" fill="none" stroke="#7b2ff7" stroke-width="1"/>
+    <circle cx="120" cy="680" r="25" fill="none" stroke="#7b2ff7" stroke-width="0.5"/>
+  </g>
+
+  <!-- ══ ZEROCLAW CIRCUIT LINES (subtle) ══ -->
+  <g stroke="#7b2ff7" stroke-width="1" opacity="0.1" fill="none">
+    <path d="M 50 600 L 100 600 L 130 570"/>
+    <path d="M 670 600 L 720 600 L 750 630"/>
+    <circle cx="100" cy="600" r="3" fill="#7b2ff7"/>
+    <circle cx="720" cy="600" r="3" fill="#7b2ff7"/>
+  </g>
+
+  <!-- ══ TYPOGRAPHY ══ -->
+  <!-- CLAWRA main title -->
+  <text x="400" y="605" text-anchor="middle" font-family="'SF Pro Display', 'Inter', system-ui, -apple-system, sans-serif" font-size="72" font-weight="800" fill="white" letter-spacing="8" filter="url(#glow)">CLAWRA</text>
+  <!-- Underline accent -->
+  <rect x="250" y="620" width="300" height="2" rx="1" fill="url(#claw-grad)" opacity="0.6"/>
+  <!-- Subtitle -->
+  <text x="400" y="660" text-anchor="middle" font-family="'SF Pro Display', 'Inter', system-ui, -apple-system, sans-serif" font-size="22" font-weight="500" fill="#ff2d55" letter-spacing="10" opacity="0.9">ZEROCLAW</text>
+  <!-- Tagline -->
+  <text x="400" y="700" text-anchor="middle" font-family="'SF Pro Text', 'Inter', system-ui, -apple-system, sans-serif" font-size="14" font-weight="400" fill="#8888aa" letter-spacing="3">SELFIE SUPERPOWERS FOR AI AGENTS</text>
+
+  <!-- ══ VERSION BADGE (bottom-right) ══ -->
+  <g transform="translate(640, 740)">
+    <rect x="0" y="0" width="80" height="24" rx="12" fill="#1a1a3a" stroke="#2a2a5e" stroke-width="1"/>
+    <text x="40" y="16" text-anchor="middle" font-family="'SF Mono', 'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="#7b2ff7">v1.0.0</text>
+  </g>
+
+  <!-- ══ RUST BADGE (bottom-left) ══ -->
+  <g transform="translate(80, 740)">
+    <rect x="0" y="0" width="64" height="24" rx="12" fill="#1a1a3a" stroke="#2a2a5e" stroke-width="1"/>
+    <text x="32" y="16" text-anchor="middle" font-family="'SF Mono', 'JetBrains Mono', monospace" font-size="11" font-weight="500" fill="#ff6b81">Rust</text>
+  </g>
 </svg>
