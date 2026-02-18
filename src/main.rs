@@ -24,9 +24,10 @@ EXAMPLES:
     clawra selfie \"a cozy cafe\" \"#photography\" --mode direct --caption \"Vibes!\"
 
 ENVIRONMENT:
-    FAL_KEY                     fal.ai API key (required for selfie)
-    ZEROCLAW_GATEWAY_URL        Gateway URL (default: http://localhost:8080)
-    ZEROCLAW_GATEWAY_TOKEN      Gateway paired bearer token
+    OPENROUTER_API_KEY          OpenRouter API key (required for selfie)
+    SELFIE_MODEL                Image model (default: google/gemini-2.5-flash-image)
+    TELEGRAM_BOT_TOKEN          Telegram bot token (for direct sending)
+    TELEGRAM_CHAT_ID            Telegram chat ID (for direct sending)
 ";
 
 fn main() {
@@ -55,7 +56,7 @@ fn main() {
 
             // Parse optional flags
             let mut mode = "auto".to_string();
-            let mut caption = "Edited with Grok Imagine".to_string();
+            let mut caption = "".to_string();
             let mut format = "jpeg".to_string();
 
             let mut i = 4;

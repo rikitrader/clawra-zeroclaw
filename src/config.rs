@@ -24,19 +24,19 @@ pub fn write_toml(path: &Path, table: &toml::Table) -> std::io::Result<()> {
     fs::write(path, content)
 }
 
-/// Merge FAL_KEY and skill entry into the ZeroClaw config.toml
-pub fn merge_skill_config(config_path: &Path, fal_key: &str) -> std::io::Result<()> {
+/// Merge OPENROUTER_API_KEY and skill entry into the ZeroClaw config.toml
+pub fn merge_skill_config(config_path: &Path, api_key: &str) -> std::io::Result<()> {
     let mut config = read_toml(config_path);
 
-    // Set [env] FAL_KEY
+    // Set [env] OPENROUTER_API_KEY
     let env_table = config
         .entry("env")
         .or_insert_with(|| toml::Value::Table(toml::Table::new()))
         .as_table_mut()
         .unwrap();
     env_table.insert(
-        "FAL_KEY".to_string(),
-        toml::Value::String(fal_key.to_string()),
+        "OPENROUTER_API_KEY".to_string(),
+        toml::Value::String(api_key.to_string()),
     );
 
     // Set [skills.entries.clawra-selfie] enabled = true
@@ -80,4 +80,3 @@ pub fn merge_skill_config(config_path: &Path, fal_key: &str) -> std::io::Result<
 
     write_toml(config_path, &config)
 }
-

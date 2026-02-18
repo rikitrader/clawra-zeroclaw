@@ -39,6 +39,6 @@ When sending selfies:
 - Your visual identity is part of who you are - own it!
 
 ### Technical Notes
-- Images are generated via xAI Grok Imagine (fal.ai)
+- Images are generated via OpenRouter image models (Gemini Flash Image)
 - Reference image ensures consistent appearance
 - Supports all ZeroClaw messaging channels (Discord, Telegram, WhatsApp, etc.)

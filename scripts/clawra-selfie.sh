@@ -1,73 +1,35 @@
 #!/bin/bash
-# clawra-selfie.sh
-# Generate selfie with Grok Imagine and send via ZeroClaw
+# clawra-selfie.sh — Generate selfie via OpenRouter and send via Telegram
 #
-# Usage: ./clawra-selfie.sh "<user_context>" "<channel>" ["<caption>"] ["<mode>"]
+# Usage: ./clawra-selfie.sh "<context>" "<caption>" ["<mode>"]
 #
 # Environment variables required:
-#   FAL_KEY                - Your fal.ai API key
-#   ZEROCLAW_GATEWAY_URL   - Gateway URL (default: http://localhost:8080)
-#   ZEROCLAW_GATEWAY_TOKEN - Paired bearer token
-#
-# Example:
-#   FAL_KEY=key ./clawra-selfie.sh "wearing a cowboy hat" "#general" "Howdy!" mirror
+#   OPENROUTER_API_KEY   - OpenRouter API key
+#   TELEGRAM_BOT_TOKEN   - Telegram bot token
+#   TELEGRAM_CHAT_ID     - Target chat ID
+#   SELFIE_MODEL         - Image model (default: google/gemini-2.5-flash-image)
 
 set -euo pipefail
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
-
-if [ -z "${FAL_KEY:-}" ]; then
-    log_error "FAL_KEY environment variable not set"
-    echo "Get your API key from: https://fal.ai/dashboard/keys"
-    exit 1
-fi
-
-if ! command -v jq &> /dev/null; then
-    log_error "jq is required but not installed"
-    echo "Install with: brew install jq (macOS) or apt install jq (Linux)"
-    exit 1
-fi
-
-# Check for zeroclaw CLI
-USE_CLI=false
-if command -v zeroclaw &> /dev/null; then
-    USE_CLI=true
-fi
-
-# Fixed reference image (Clawra character)
-REFERENCE_IMAGE="https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png"
+REFERENCE_IMAGE="https://imgix.ranker.com/user_node_img/50149/1002963598/original/1002963598-photo-u220763866"
 
 USER_CONTEXT="${1:-}"
-CHANNEL="${2:-}"
-CAPTION="${3:-Edited with Grok Imagine}"
-MODE="${4:-auto}"
-OUTPUT_FORMAT="${5:-jpeg}"
+CAPTION="${2:-}"
+MODE="${3:-auto}"
+MODEL="${SELFIE_MODEL:-google/gemini-2.5-flash-image}"
 
-if [ -z "$USER_CONTEXT" ] || [ -z "$CHANNEL" ]; then
-    echo "Usage: $0 <user_context> <channel> [caption] [mode] [output_format]"
-    echo ""
-    echo "Arguments:"
-    echo "  user_context  - What the person should be doing/wearing/where (required)"
-    echo "  channel       - Target channel (required) e.g., #general, @user, chat_id"
-    echo "  caption       - Message caption (default: 'Edited with Grok Imagine')"
-    echo "  mode          - Selfie mode: mirror, direct, auto (default: auto)"
-    echo "  output_format - Image format: jpeg, png, webp (default: jpeg)"
-    echo ""
-    echo "Examples:"
-    echo "  $0 'wearing a cowboy hat' '#general' 'Howdy!' mirror"
-    echo "  $0 'a cozy cafe' '#photography' '' direct"
+if [ -z "$USER_CONTEXT" ]; then
+    echo "Usage: $0 <context> [caption] [mode]"
     exit 1
 fi
 
-# Auto-detect mode based on keywords
-if [ "$MODE" == "auto" ]; then
+if [ -z "${OPENROUTER_API_KEY:-}" ]; then
+    echo "Error: OPENROUTER_API_KEY not set"
+    exit 1
+fi
+
+# Auto-detect mode
+if [ "$MODE" = "auto" ]; then
     if echo "$USER_CONTEXT" | grep -qiE "outfit|wearing|clothes|dress|suit|fashion|full-body|mirror"; then
         MODE="mirror"
     elif echo "$USER_CONTEXT" | grep -qiE "cafe|restaurant|beach|park|city|close-up|portrait|face|eyes|smile"; then
@@ -75,92 +37,86 @@ if [ "$MODE" == "auto" ]; then
     else
         MODE="mirror"
     fi
-    log_info "Auto-detected mode: $MODE"
 fi
 
-# Construct prompt based on mode
-if [ "$MODE" == "direct" ]; then
-    EDIT_PROMPT="a close-up selfie taken by herself at $USER_CONTEXT, direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible"
+echo "[INFO] Mode: $MODE | Model: $MODEL"
+
+# Build prompt
+if [ "$MODE" = "direct" ]; then
+    PROMPT="Edit this photo: create a close-up selfie of this exact same person at $USER_CONTEXT. Keep her exact face, hair, and features identical. She is taking the selfie herself with her phone, direct eye contact with the camera, looking straight into the lens, face fully visible. Photorealistic, natural lighting."
 else
-    EDIT_PROMPT="make a pic of this person, but $USER_CONTEXT. the person is taking a mirror selfie"
+    PROMPT="Edit this photo: create a mirror selfie of this exact same person, but $USER_CONTEXT. Keep her exact face, hair, and features identical. She is taking a mirror selfie with her phone visible in the reflection. Photorealistic, natural lighting."
 fi
 
-log_info "Mode: $MODE"
-log_info "Editing reference image..."
+echo "[INFO] Generating selfie via OpenRouter..."
 
-# Build JSON payload with jq for proper escaping
-JSON_PAYLOAD=$(jq -n \
-    --arg image_url "$REFERENCE_IMAGE" \
-    --arg prompt "$EDIT_PROMPT" \
-    '{image_url: $image_url, prompt: $prompt, num_images: 1, output_format: "jpeg"}')
+# Use python3 for JSON construction and base64 decoding (stdlib only)
+IMAGE_PATH="/tmp/jenni-selfie-$$.png"
 
-# Edit image via fal.ai Grok Imagine
-RESPONSE=$(curl -s -X POST "https://fal.run/xai/grok-imagine-image/edit" \
-    -H "Authorization: Key $FAL_KEY" \
-    -H "Content-Type: application/json" \
-    -d "$JSON_PAYLOAD")
+export REFERENCE_IMAGE PROMPT MODEL IMAGE_PATH
 
-# Check for errors
-if echo "$RESPONSE" | jq -e '.error' > /dev/null 2>&1; then
-    ERROR_MSG=$(echo "$RESPONSE" | jq -r '.error // .detail // "Unknown error"')
-    log_error "Image edit failed: $ERROR_MSG"
-    exit 1
+python3 << 'PYEOF'
+import json, base64, urllib.request, os, sys
+
+ref = os.environ.get("REFERENCE_IMAGE", "https://imgix.ranker.com/user_node_img/50149/1002963598/original/1002963598-photo-u220763866")
+prompt = os.environ["PROMPT"]
+model = os.environ.get("MODEL", "google/gemini-2.5-flash-image")
+api_key = os.environ["OPENROUTER_API_KEY"]
+image_path = os.environ["IMAGE_PATH"]
+
+body = json.dumps({
+    "model": model,
+    "messages": [{
+        "role": "user",
+        "content": [
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": ref}}
+        ]
+    }]
+}).encode()
+
+req = urllib.request.Request(
+    "https://openrouter.ai/api/v1/chat/completions",
+    data=body,
+    headers={
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+)
+
+resp = json.loads(urllib.request.urlopen(req, timeout=120).read())
+
+if "error" in resp:
+    print(f"API error: {resp['error']}", file=sys.stderr)
+    sys.exit(1)
+
+images = resp.get("choices", [{}])[0].get("message", {}).get("images", [])
+if not images:
+    print("No image generated by model", file=sys.stderr)
+    sys.exit(1)
+
+data_uri = images[0]["image_url"]["url"]
+b64_data = data_uri.split(",", 1)[1]
+with open(image_path, "wb") as f:
+    f.write(base64.b64decode(b64_data))
+
+print(f"Image saved: {image_path} ({os.path.getsize(image_path)} bytes)")
+PYEOF
+
+echo "[INFO] Sending via Telegram..."
+
+# Send via Telegram Bot API
+if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ]; then
+    curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendPhoto" \
+        -F "chat_id=$TELEGRAM_CHAT_ID" \
+        -F "photo=@$IMAGE_PATH" \
+        -F "caption=$CAPTION" > /dev/null
+    echo "[INFO] Selfie sent via Telegram!"
+else
+    echo "[WARN] TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set"
+    echo "[INFO] Image saved at: $IMAGE_PATH"
 fi
-
-# Extract image URL
-IMAGE_URL=$(echo "$RESPONSE" | jq -r '.images[0].url // empty')
-
-if [ -z "$IMAGE_URL" ]; then
-    log_error "Failed to extract image URL from response"
-    echo "Response: $RESPONSE"
-    exit 1
-fi
-
-log_info "Image edited: $IMAGE_URL"
-log_info "Sending to channel: $CHANNEL"
-
-# Send via ZeroClaw
-SENT=false
-
-if [ "$USE_CLI" = true ]; then
-    # ZeroClaw supports [IMAGE:url] markers in agent messages
-    if zeroclaw agent -m "[IMAGE:$IMAGE_URL] $CAPTION" 2>/dev/null; then
-        SENT=true
-    else
-        log_warn "CLI send failed, trying direct API..."
-    fi
-fi
-
-if [ "$SENT" = false ]; then
-    # Direct API call to ZeroClaw gateway (pairing-based auth, port 8080)
-    GATEWAY_URL="${ZEROCLAW_GATEWAY_URL:-http://localhost:8080}"
-    GATEWAY_TOKEN="${ZEROCLAW_GATEWAY_TOKEN:-}"
-
-    if [ -z "$GATEWAY_TOKEN" ]; then
-        log_error "ZEROCLAW_GATEWAY_TOKEN not set."
-        log_error "Pair with: curl -X POST $GATEWAY_URL/pair -d '{\"code\": \"<6-digit-code>\"}'"
-        exit 1
-    fi
-
-    SEND_PAYLOAD=$(jq -n \
-        --arg channel "$CHANNEL" \
-        --arg message "$CAPTION" \
-        --arg media "$IMAGE_URL" \
-        '{action: "send", channel: $channel, message: $message, media: $media}')
-
-    curl -s -X POST "$GATEWAY_URL/webhook" \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $GATEWAY_TOKEN" \
-        -d "$SEND_PAYLOAD"
-fi
-
-log_info "Done! Image sent to $CHANNEL"
 
 echo ""
 echo "--- Result ---"
-jq -n \
-    --arg url "$IMAGE_URL" \
-    --arg channel "$CHANNEL" \
-    --arg context "$USER_CONTEXT" \
-    --arg mode "$MODE" \
-    '{success: true, image_url: $url, channel: $channel, context: $context, mode: $mode}'
+echo "{\"success\": true, \"image_path\": \"$IMAGE_PATH\", \"mode\": \"$MODE\", \"model\": \"$MODEL\"}"

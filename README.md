@@ -13,7 +13,7 @@ clawra install
 
 This will:
 1. Check ZeroClaw is installed
-2. Guide you to get a fal.ai API key
+2. Guide you to get an OpenRouter API key
 3. Install the skill to `~/.zeroclaw/skills/clawra-selfie/`
 4. Configure ZeroClaw to use the skill (TOML config)
 5. Add selfie capabilities to your agent's SOUL.md
@@ -42,14 +42,14 @@ Clawra Selfie enables your ZeroClaw agent to:
 ## Prerequisites
 
 - [ZeroClaw](https://github.com/zeroclaw-labs/zeroclaw) installed and configured
-- [fal.ai](https://fal.ai) account (free tier available)
+- [OpenRouter](https://openrouter.ai) account and API key
 - Rust toolchain (`rustup` / `cargo`)
 
 ## Manual Installation
 
 ### 1. Get API Key
 
-Visit [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys) and create an API key.
+Visit [openrouter.ai/keys](https://openrouter.ai/keys) and create an API key.
 
 ### 2. Clone the Skill
 
@@ -63,7 +63,10 @@ Add to `~/.zeroclaw/config.toml`:
 
 ```toml
 [env]
-FAL_KEY = "your_fal_key_here"
+OPENROUTER_API_KEY = "sk-or-v1-your_key_here"
+SELFIE_MODEL = "google/gemini-2.5-flash-image"
+TELEGRAM_BOT_TOKEN = "your_bot_token"
+TELEGRAM_CHAT_ID = "your_chat_id"
 
 [skills.entries.clawra-selfie]
 enabled = true
@@ -74,7 +77,7 @@ enabled = true
 Add the selfie persona to `~/.zeroclaw/workspace/SOUL.md`:
 
 ```markdown
-## Clawra Selfie Capability
+## Selfie Capability
 
 You have a physical appearance and can take selfies!
 When users ask for pictures, use the clawra-selfie skill.
@@ -97,25 +100,30 @@ Once installed, your agent responds to:
 |--------|---------------------|----------------------|
 | Installer | Node.js (`npx`) | Rust (`cargo install`) |
 | Config format | JSON (`openclaw.json`) | TOML (`config.toml`) |
-| Gateway port | 18789 | 8080 |
+| Image generation | fal.ai (Grok Imagine) | OpenRouter (Gemini Flash Image) |
 | Gateway auth | Token in config | Pairing-based (6-digit code) |
-| Media sending | `openclaw message send --media` | `[IMAGE:url]` markers or `/webhook` API |
+| Media sending | `openclaw message send --media` | Telegram Bot API direct upload |
 | Binary size | ~28MB (Node.js) | **1.7MB** (Rust) |
 | Startup | >500ms | <10ms |
 
-## Reference Image
+## Supported Image Models (via OpenRouter)
 
-```
-https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
-```
+| Model | Cost | Notes |
+|-------|------|-------|
+| `google/gemini-2.5-flash-image` | ~$0.04/selfie | Default, cheapest |
+| `google/gemini-3-pro-image-preview` | ~$0.08/selfie | Higher quality |
+| `openai/gpt-5-image-mini` | ~$0.10/selfie | |
+| `openai/gpt-5-image` | ~$0.40/selfie | Best quality |
+
+Set `SELFIE_MODEL` env var to switch models.
 
 ## Technical Details
 
 - **Language**: Rust (zero-dependency runtime, 1.7MB binary)
-- **Image Generation**: xAI Grok Imagine via fal.ai
+- **Image Generation**: OpenRouter API (chat completions with image models)
 - **HTTP Client**: ureq (sync, lightweight)
 - **Config**: toml crate for native TOML support
-- **Messaging**: ZeroClaw Gateway API (pairing-based auth)
+- **Messaging**: Telegram Bot API (direct file upload)
 - **Supported Platforms**: Discord, Telegram, WhatsApp, Slack, iMessage
 
 ## Project Structure
@@ -126,10 +134,10 @@ clawra-zeroclaw/
 ├── src/
 │   ├── main.rs               # CLI entry (install / selfie subcommands)
 │   ├── install.rs             # Interactive installer
-│   ├── selfie.rs              # Image generation + ZeroClaw sending
+│   ├── selfie.rs              # Image generation via OpenRouter + Telegram sending
 │   └── config.rs              # TOML config read/write
 ├── scripts/
-│   └── clawra-selfie.sh       # Standalone bash script
+│   └── clawra-selfie.sh       # Standalone bash script (OpenRouter)
 ├── skill/
 │   ├── SKILL.md               # Skill definition (installed to ~/.zeroclaw/)
 │   ├── scripts/
@@ -138,8 +146,6 @@ clawra-zeroclaw/
 │       └── clawra.png         # Reference image
 ├── templates/
 │   └── soul-injection.md      # Persona template
-├── assets/
-│   └── clawra.png             # Reference image
 ├── SKILL.md
 └── README.md
 ```

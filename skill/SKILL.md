@@ -1,80 +1,186 @@
 ---
 name: clawra-selfie
-description: Edit Clawra's reference image with Grok Imagine (xAI Aurora) and send selfies to messaging channels via ZeroClaw
-allowed-tools: Bash(npm:*) Bash(npx:*) Bash(zeroclaw:*) Bash(curl:*) Read Write WebFetch
+description: Generate selfies using a reference image via OpenRouter image models and send to messaging channels via ZeroClaw
+allowed-tools: Bash(curl:*) Bash(zeroclaw:*) Bash(python3:*) Read Write
 ---
 
 # Clawra Selfie (ZeroClaw)
 
-Edit a fixed reference image using xAI's Grok Imagine model and distribute it across messaging platforms (WhatsApp, Telegram, Discord, Slack, etc.) via ZeroClaw.
+Generate selfies from a fixed reference image using OpenRouter image generation models, then send them via Telegram.
 
 ## Reference Image
 
-The skill uses a fixed reference image hosted on jsDelivr CDN:
-
 ```
-https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
+https://imgix.ranker.com/user_node_img/50149/1002963598/original/1002963598-photo-u220763866
 ```
 
 ## When to Use
 
-- User says "send a pic", "send me a pic", "send a photo", "send a selfie"
+- User says "send a pic", "send me a pic", "send a photo", "send a selfie", "foto", "manda una foto"
 - User says "send a pic of you...", "send a selfie of you..."
-- User asks "what are you doing?", "how are you doing?", "where are you?"
+- User asks "what are you doing?", "how are you doing?", "where are you?", "que haces?"
 - User describes a context: "send a pic wearing...", "send a pic at..."
-- User wants Clawra to appear in a specific outfit, location, or situation
+- User wants you to appear in a specific outfit, location, or situation
 
-## Quick Reference
-
-### Required Environment Variables
+## Required Environment Variables
 
 ```bash
-FAL_KEY=your_fal_api_key              # Get from https://fal.ai/dashboard/keys
-ZEROCLAW_GATEWAY_TOKEN=your_token     # From: zeroclaw gateway pairing
+OPENROUTER_API_KEY    # OpenRouter API key
+TELEGRAM_BOT_TOKEN    # Telegram bot token for sending photos
+TELEGRAM_CHAT_ID      # Target chat ID
 ```
 
-### Workflow
+## Workflow
 
-1. **Get user prompt** for how to edit the image
-2. **Edit image** via fal.ai Grok Imagine Edit API with fixed reference
-3. **Extract image URL** from response
-4. **Send to ZeroClaw** with target channel(s)
+1. **Detect mode** from user's message (mirror vs direct)
+2. **Build prompt** describing the selfie
+3. **Call OpenRouter** with image generation model + reference image
+4. **Extract base64 image** from response `message.images[0].image_url.url`
+5. **Decode and save** to temp file
+6. **Send via Telegram** Bot API `sendPhoto` with file upload
 
-## Step-by-Step Instructions
+## How to Generate a Selfie
 
-### Step 1: Collect User Input
+Run this bash script. Replace `<CONTEXT>` with the user's description and `<CAPTION>` with a message:
 
-Ask the user for:
-- **User context**: What should the person in the image be doing/wearing/where?
-- **Mode** (optional): `mirror` or `direct` selfie style
-- **Target channel(s)**: Where should it be sent? (e.g., `#general`, `@username`, channel ID)
-- **Platform** (optional): Which platform? (discord, telegram, whatsapp, slack)
+```bash
+#!/bin/bash
+set -euo pipefail
+
+REFERENCE_IMAGE="https://imgix.ranker.com/user_node_img/50149/1002963598/original/1002963598-photo-u220763866"
+CONTEXT="$1"
+CAPTION="${2:-}"
+MODE="${3:-auto}"
+
+# Auto-detect mode
+if [ "$MODE" = "auto" ]; then
+  if echo "$CONTEXT" | grep -qiE "outfit|wearing|clothes|dress|suit|fashion|full-body|mirror"; then
+    MODE="mirror"
+  elif echo "$CONTEXT" | grep -qiE "cafe|restaurant|beach|park|city|close-up|portrait|face|eyes|smile"; then
+    MODE="direct"
+  else
+    MODE="mirror"
+  fi
+fi
+
+# Build prompt
+if [ "$MODE" = "direct" ]; then
+  PROMPT="Edit this photo: create a close-up selfie of this exact same person at $CONTEXT. Keep her exact face, hair, and features identical. She is taking the selfie herself with her phone, direct eye contact with the camera, looking straight into the lens, face fully visible. Photorealistic, natural lighting."
+else
+  PROMPT="Edit this photo: create a mirror selfie of this exact same person, but $CONTEXT. Keep her exact face, hair, and features identical. She is taking a mirror selfie with her phone visible in the reflection. Photorealistic, natural lighting."
+fi
+
+# Call OpenRouter
+RESPONSE=$(curl -s -X POST "https://openrouter.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(python3 -c "
+import json
+print(json.dumps({
+    'model': '${SELFIE_MODEL:-google/gemini-2.5-flash-image}',
+    'messages': [{
+        'role': 'user',
+        'content': [
+            {'type': 'text', 'text': '''$PROMPT'''},
+            {'type': 'image_url', 'image_url': {'url': '$REFERENCE_IMAGE'}}
+        ]
+    }]
+}))
+")")
+
+# Extract base64 image and save to file
+IMAGE_PATH="/tmp/jenni-selfie-$$.png"
+python3 -c "
+import json, base64, sys
+data = json.loads('''$(echo "$RESPONSE" | sed "s/'''/\"/g")''')
+images = data.get('choices', [{}])[0].get('message', {}).get('images', [])
+if not images:
+    print('ERROR: No image generated', file=sys.stderr)
+    sys.exit(1)
+url = images[0]['image_url']['url']
+b64 = url.split(',', 1)[1]
+with open('$IMAGE_PATH', 'wb') as f:
+    f.write(base64.b64decode(b64))
+print('OK')
+"
+
+# Send via Telegram
+curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendPhoto" \
+  -F "chat_id=$TELEGRAM_CHAT_ID" \
+  -F "photo=@$IMAGE_PATH" \
+  -F "caption=$CAPTION"
+
+echo "Selfie sent!"
+```
+
+## IMPORTANT: Simpler Alternative
+
+If the bash script above is complex, you can use this Python one-liner approach instead:
+
+```bash
+python3 -c "
+import json, base64, urllib.request, sys, os
+
+ref = 'https://imgix.ranker.com/user_node_img/50149/1002963598/original/1002963598-photo-u220763866'
+context = sys.argv[1]
+caption = sys.argv[2] if len(sys.argv) > 2 else ''
+mode = sys.argv[3] if len(sys.argv) > 3 else 'auto'
+
+# Auto-detect mode
+if mode == 'auto':
+    import re
+    if re.search(r'cafe|restaurant|beach|park|city|close-up|portrait|face|smile', context, re.I):
+        mode = 'direct'
+    else:
+        mode = 'mirror'
+
+# Build prompt
+if mode == 'direct':
+    prompt = f'Edit this photo: create a close-up selfie of this exact same person at {context}. Keep her exact face, hair, and features identical. She is taking the selfie herself, direct eye contact. Photorealistic.'
+else:
+    prompt = f'Edit this photo: create a mirror selfie of this exact same person, but {context}. Keep her exact face, hair, and features identical. Mirror selfie with phone visible. Photorealistic.'
+
+# Call OpenRouter
+body = json.dumps({
+    'model': os.environ.get('SELFIE_MODEL', 'google/gemini-2.5-flash-image'),
+    'messages': [{'role': 'user', 'content': [
+        {'type': 'text', 'text': prompt},
+        {'type': 'image_url', 'image_url': {'url': ref}}
+    ]}]
+}).encode()
+
+req = urllib.request.Request('https://openrouter.ai/api/v1/chat/completions',
+    data=body,
+    headers={'Authorization': f\"Bearer {os.environ['OPENROUTER_API_KEY']}\", 'Content-Type': 'application/json'})
+resp = json.loads(urllib.request.urlopen(req, timeout=120).read())
+
+images = resp['choices'][0]['message'].get('images', [])
+if not images:
+    print('No image generated'); sys.exit(1)
+
+b64 = images[0]['image_url']['url'].split(',', 1)[1]
+path = f'/tmp/jenni-selfie-{os.getpid()}.png'
+with open(path, 'wb') as f:
+    f.write(base64.b64decode(b64))
+
+# Send via Telegram
+import subprocess
+subprocess.run(['curl', '-s', '-X', 'POST',
+    f\"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendPhoto\",
+    '-F', f\"chat_id={os.environ['TELEGRAM_CHAT_ID']}\",
+    '-F', f'photo=@{path}',
+    '-F', f'caption={caption}'], check=True)
+print(f'Selfie sent! ({path})')
+" "<CONTEXT>" "<CAPTION>" "<MODE>"
+```
 
 ## Prompt Modes
 
-### Mode 1: Mirror Selfie (default)
+### Mirror Selfie (default)
 Best for: outfit showcases, full-body shots, fashion content
 
-```
-make a pic of this person, but [user's context]. the person is taking a mirror selfie
-```
-
-**Example**: "wearing a santa hat" →
-```
-make a pic of this person, but wearing a santa hat. the person is taking a mirror selfie
-```
-
-### Mode 2: Direct Selfie
+### Direct Selfie
 Best for: close-up portraits, location shots, emotional expressions
-
-```
-a close-up selfie taken by herself at [user's context], direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible
-```
-
-**Example**: "a cozy cafe with warm lighting" →
-```
-a close-up selfie taken by herself at a cozy cafe with warm lighting, direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible
-```
 
 ### Mode Selection Logic
 
@@ -85,280 +191,11 @@ a close-up selfie taken by herself at a cozy cafe with warm lighting, direct eye
 | close-up, portrait, face, eyes, smile | `direct` |
 | full-body, mirror, reflection | `mirror` |
 
-### Step 2: Edit Image with Grok Imagine
-
-Use the fal.ai API to edit the reference image:
-
-```bash
-REFERENCE_IMAGE="https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png"
-
-# Mode 1: Mirror Selfie
-PROMPT="make a pic of this person, but <USER_CONTEXT>. the person is taking a mirror selfie"
-
-# Mode 2: Direct Selfie
-PROMPT="a close-up selfie taken by herself at <USER_CONTEXT>, direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible"
-
-# Build JSON payload with jq (handles escaping properly)
-JSON_PAYLOAD=$(jq -n \
-  --arg image_url "$REFERENCE_IMAGE" \
-  --arg prompt "$PROMPT" \
-  '{image_url: $image_url, prompt: $prompt, num_images: 1, output_format: "jpeg"}')
-
-curl -X POST "https://fal.run/xai/grok-imagine-image/edit" \
-  -H "Authorization: Key $FAL_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$JSON_PAYLOAD"
-```
-
-**Response Format:**
-```json
-{
-  "images": [
-    {
-      "url": "https://v3b.fal.media/files/...",
-      "content_type": "image/jpeg",
-      "width": 1024,
-      "height": 1024
-    }
-  ],
-  "revised_prompt": "Enhanced prompt text..."
-}
-```
-
-### Step 3: Send Image via ZeroClaw
-
-**Option A: CLI with [IMAGE:] marker**
-```bash
-zeroclaw agent -m "[IMAGE:<IMAGE_URL>] <CAPTION_TEXT>"
-```
-
-**Option B: Direct Gateway API call (pairing-based auth)**
-```bash
-curl -X POST "http://localhost:8080/webhook" \
-  -H "Authorization: Bearer $ZEROCLAW_GATEWAY_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "action": "send",
-    "channel": "<TARGET_CHANNEL>",
-    "message": "<CAPTION_TEXT>",
-    "media": "<IMAGE_URL>"
-  }'
-```
-
-## Complete Script Example
-
-```bash
-#!/bin/bash
-set -euo pipefail
-
-if [ -z "$FAL_KEY" ]; then
-  echo "Error: FAL_KEY environment variable not set"
-  exit 1
-fi
-
-REFERENCE_IMAGE="https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png"
-
-USER_CONTEXT="$1"
-CHANNEL="$2"
-MODE="${3:-auto}"
-CAPTION="${4:-Edited with Grok Imagine}"
-
-if [ -z "$USER_CONTEXT" ] || [ -z "$CHANNEL" ]; then
-  echo "Usage: $0 <user_context> <channel> [mode] [caption]"
-  exit 1
-fi
-
-# Auto-detect mode
-if [ "$MODE" == "auto" ]; then
-  if echo "$USER_CONTEXT" | grep -qiE "outfit|wearing|clothes|dress|suit|fashion|full-body|mirror"; then
-    MODE="mirror"
-  elif echo "$USER_CONTEXT" | grep -qiE "cafe|restaurant|beach|park|city|close-up|portrait|face|eyes|smile"; then
-    MODE="direct"
-  else
-    MODE="mirror"
-  fi
-fi
-
-# Build prompt
-if [ "$MODE" == "direct" ]; then
-  EDIT_PROMPT="a close-up selfie taken by herself at $USER_CONTEXT, direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible"
-else
-  EDIT_PROMPT="make a pic of this person, but $USER_CONTEXT. the person is taking a mirror selfie"
-fi
-
-# Edit image
-JSON_PAYLOAD=$(jq -n \
-  --arg image_url "$REFERENCE_IMAGE" \
-  --arg prompt "$EDIT_PROMPT" \
-  '{image_url: $image_url, prompt: $prompt, num_images: 1, output_format: "jpeg"}')
-
-RESPONSE=$(curl -s -X POST "https://fal.run/xai/grok-imagine-image/edit" \
-  -H "Authorization: Key $FAL_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$JSON_PAYLOAD")
-
-IMAGE_URL=$(echo "$RESPONSE" | jq -r '.images[0].url')
-
-if [ "$IMAGE_URL" == "null" ] || [ -z "$IMAGE_URL" ]; then
-  echo "Error: Failed to edit image"
-  echo "Response: $RESPONSE"
-  exit 1
-fi
-
-echo "Image edited: $IMAGE_URL"
-
-# Send via ZeroClaw
-zeroclaw agent -m "[IMAGE:$IMAGE_URL] $CAPTION"
-
-echo "Done!"
-```
-
-## Node.js/TypeScript Implementation
-
-```typescript
-import { fal } from "@fal-ai/client";
-import { execFile } from "child_process";
-import { promisify } from "util";
-
-const execFileAsync = promisify(execFile);
-
-const REFERENCE_IMAGE = "https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png";
-
-interface GrokImagineResult {
-  images: Array<{
-    url: string;
-    content_type: string;
-    width: number;
-    height: number;
-  }>;
-  revised_prompt?: string;
-}
-
-type SelfieMode = "mirror" | "direct" | "auto";
-
-function detectMode(userContext: string): "mirror" | "direct" {
-  const mirrorKeywords = /outfit|wearing|clothes|dress|suit|fashion|full-body|mirror/i;
-  const directKeywords = /cafe|restaurant|beach|park|city|close-up|portrait|face|eyes|smile/i;
-
-  if (directKeywords.test(userContext)) return "direct";
-  if (mirrorKeywords.test(userContext)) return "mirror";
-  return "mirror";
-}
-
-function buildPrompt(userContext: string, mode: "mirror" | "direct"): string {
-  if (mode === "direct") {
-    return `a close-up selfie taken by herself at ${userContext}, direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible`;
-  }
-  return `make a pic of this person, but ${userContext}. the person is taking a mirror selfie`;
-}
-
-async function editAndSend(
-  userContext: string,
-  channel: string,
-  mode: SelfieMode = "auto",
-  caption?: string
-): Promise<string> {
-  fal.config({ credentials: process.env.FAL_KEY! });
-
-  const actualMode = mode === "auto" ? detectMode(userContext) : mode;
-  const editPrompt = buildPrompt(userContext, actualMode);
-
-  const result = await fal.subscribe("xai/grok-imagine-image/edit", {
-    input: {
-      image_url: REFERENCE_IMAGE,
-      prompt: editPrompt,
-      num_images: 1,
-      output_format: "jpeg"
-    }
-  }) as { data: GrokImagineResult };
-
-  const imageUrl = result.data.images[0].url;
-
-  // Send via ZeroClaw using [IMAGE:] marker
-  const messageCaption = caption || "Edited with Grok Imagine";
-  await execFileAsync("zeroclaw", ["agent", "-m", `[IMAGE:${imageUrl}] ${messageCaption}`]);
-
-  return imageUrl;
-}
-
-// Example usage
-editAndSend("wearing a cyberpunk outfit with neon lights", "#art-gallery", "auto", "Check out this AI-edited art!");
-```
-
 ## Supported Platforms
 
-ZeroClaw supports sending to:
-
-| Platform | Channel Format | Example |
-|----------|----------------|---------|
-| Discord | `#channel-name` or channel ID | `#general`, `123456789` |
-| Telegram | `@username` or chat ID | `@mychannel`, `-100123456` |
-| WhatsApp | Phone number (E.164 or JID) | `+1234567890`, `1234567890@s.whatsapp.net` |
-| Slack | `#channel-name` | `#random` |
-| iMessage | Phone/email | `+1234567890` |
-
-## Grok Imagine Edit Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `image_url` | string | required | URL of image to edit (fixed reference) |
-| `prompt` | string | required | Edit instruction |
-| `num_images` | 1-4 | 1 | Number of images to generate |
-| `output_format` | enum | "jpeg" | jpeg, png, webp |
-
-## Setup Requirements
-
-### 1. Install fal.ai client (for Node.js usage)
-```bash
-npm install @fal-ai/client
-```
-
-### 2. Install ZeroClaw
-```bash
-# See: https://github.com/zeroclaw-labs/zeroclaw
-curl -fsSL https://zeroclaw.bot/install.sh | sh
-```
-
-### 3. Onboard ZeroClaw
-```bash
-zeroclaw onboard
-```
-
-### 4. Start ZeroClaw Gateway
-```bash
-zeroclaw gateway
-```
-
-### 5. Pair with Gateway
-```bash
-# Gateway prints a 6-digit pairing code on startup
-# Exchange it for a bearer token:
-curl -X POST http://localhost:8080/pair -d '{"code": "123456"}'
-# Returns: {"token": "your_bearer_token"}
-```
-
-## Error Handling
-
-- **FAL_KEY missing**: Ensure the API key is set in environment or `~/.zeroclaw/config.toml`
-- **Image edit failed**: Check prompt content and API quota
-- **ZeroClaw send failed**: Verify gateway is running (`zeroclaw status`)
-- **Pairing expired**: Re-pair with a new 6-digit code
-- **Rate limits**: fal.ai has rate limits; implement retry logic if needed
-
-## Tips
-
-1. **Mirror mode context examples** (outfit focus):
-   - "wearing a santa hat"
-   - "in a business suit"
-   - "wearing a summer dress"
-   - "in streetwear fashion"
-
-2. **Direct mode context examples** (location/portrait focus):
-   - "a cozy cafe with warm lighting"
-   - "a sunny beach at sunset"
-   - "a busy city street at night"
-   - "a peaceful park in autumn"
-
-3. **Mode selection**: Let auto-detect work, or explicitly specify for control
-4. **Batch sending**: Edit once, send to multiple channels
-5. **ZeroClaw daemon**: Use `zeroclaw daemon` for autonomous selfie responses
+| Platform | Channel Format |
+|----------|----------------|
+| Telegram | `@username` or chat ID |
+| Discord | `#channel-name` or channel ID |
+| WhatsApp | Phone number (E.164) |
+| Slack | `#channel-name` |

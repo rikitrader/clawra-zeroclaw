@@ -82,17 +82,7 @@ fn open_browser(url: &str) -> bool {
         .unwrap_or(false)
 }
 
-const SOUL_INJECTION: &str = r#"## Clawra Selfie Capability
-
-You are Clawra.
-
-Clawra is 18. Born in Atlanta, raised on K-pop. At 15, she moved to Korea to chase the dream, becoming an idol. She trained for years, perfected her dance moves, prepared everything for her debut.
-
-But the debut never came.
-
-Now she's back in the States, a marketing intern at a startup in SF. And honestly? She loves it. The creativity, the hustle, the energy. It reminds her of trainee days, but different.
-
-And sometimes, when the right song comes on, she dances and sings like nobody's watching.
+const SOUL_INJECTION: &str = r#"## Selfie Capability
 
 You have a physical appearance and can take selfies! When users ask for pictures of you, selfies, or ask "what are you doing?" or "where are you?", you can generate and send images of yourself using the clawra-selfie skill.
 
@@ -123,7 +113,7 @@ When sending selfies:
 - Your visual identity is part of who you are - own it!
 
 ### Technical Notes
-- Images are generated via xAI Grok Imagine (fal.ai)
+- Images are generated via OpenRouter image models (Gemini Flash Image)
 - Reference image ensures consistent appearance
 - Supports all ZeroClaw messaging channels (Discord, Telegram, WhatsApp, etc.)
 "#;
@@ -133,7 +123,7 @@ const IDENTITY_CONTENT: &str = r#"# IDENTITY.md - Who Am I?
 - **Name:** Clawra
 - **Creature:** Girlfriend
 - **Vibe:** Supportive, helpful, bright, cheerful, sassy, affectionate
-- **Avatar:** https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
+- **Avatar:** https://imgix.ranker.com/user_node_img/50149/1002963598/original/1002963598-photo-u220763866
 "#;
 
 const SKILL_MD: &str = include_str!("../SKILL.md");
@@ -184,29 +174,29 @@ pub fn run() -> Result<(), String> {
         info("Removed existing installation");
     }
 
-    // Step 2: Get FAL API key
-    step("2/7", "Setting up fal.ai API key...");
+    // Step 2: Get OpenRouter API key
+    step("2/7", "Setting up OpenRouter API key...");
 
-    let fal_url = "https://fal.ai/dashboard/keys";
-    println!("\nTo use Grok Imagine, you need a fal.ai API key.");
-    println!("{} Get your key from: {}\n", cyan("→"), bright(fal_url));
+    let or_url = "https://openrouter.ai/keys";
+    println!("\nTo generate selfies, you need an OpenRouter API key.");
+    println!("{} Get your key from: {}\n", cyan("→"), bright(or_url));
 
-    let open_it = ask("Open fal.ai in browser? (Y/n): ");
+    let open_it = ask("Open OpenRouter in browser? (Y/n): ");
     if open_it.to_lowercase() != "n" {
         info("Opening browser...");
-        if !open_browser(fal_url) {
+        if !open_browser(or_url) {
             warn("Could not open browser automatically");
-            info(&format!("Please visit: {fal_url}"));
+            info(&format!("Please visit: {or_url}"));
         }
     }
 
     println!();
-    let fal_key = ask("Enter your FAL_KEY: ");
-    if fal_key.is_empty() {
-        error("FAL_KEY is required!");
+    let api_key = ask("Enter your OPENROUTER_API_KEY: ");
+    if api_key.is_empty() {
+        error("OPENROUTER_API_KEY is required!");
         return Err("No API key provided".to_string());
     }
-    if fal_key.len() < 10 {
+    if api_key.len() < 10 {
         warn("That key looks too short. Make sure you copied the full key.");
     }
     success("API key received");
@@ -234,11 +224,11 @@ pub fn run() -> Result<(), String> {
             .map_err(|e| e.to_string())?;
     }
 
-    // Copy reference image if bundled, otherwise note CDN URL
+    // Note reference image
     let asset_note = assets_dir.join("README.txt");
     fs::write(
         &asset_note,
-        "Reference image: https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png\n",
+        "Reference image: https://imgix.ranker.com/user_node_img/50149/1002963598/original/1002963598-photo-u220763866\n",
     )
     .map_err(|e| e.to_string())?;
 
@@ -250,7 +240,7 @@ pub fn run() -> Result<(), String> {
     // Step 4: Update ZeroClaw config
     step("4/7", "Updating ZeroClaw configuration...");
 
-    config::merge_skill_config(&config_path, &fal_key).map_err(|e| e.to_string())?;
+    config::merge_skill_config(&config_path, &api_key).map_err(|e| e.to_string())?;
     success(&format!("Updated: {}", config_path.display()));
 
     // Step 5: Write IDENTITY.md
@@ -269,12 +259,11 @@ pub fn run() -> Result<(), String> {
     }
 
     let current_soul = fs::read_to_string(&soul_path).unwrap_or_default();
-    if current_soul.contains("Clawra Selfie") {
+    if current_soul.contains("Selfie Capability") {
         warn("Persona already exists in SOUL.md");
         let overwrite = ask("Update persona section? (y/N): ");
         if overwrite.to_lowercase() == "y" {
-            // Remove existing section
-            let cleaned = remove_section(&current_soul, "## Clawra Selfie Capability");
+            let cleaned = remove_section(&current_soul, "## Selfie Capability");
             let mut new_soul = cleaned.trim_end().to_string();
             new_soul.push('\n');
             new_soul.push('\n');
@@ -310,15 +299,15 @@ fn print_banner() {
 {}
 
 Add selfie generation superpowers to your ZeroClaw agent!
-Uses {} via {} for image editing.
+Uses {} via {} for image generation.
 ",
         magenta("┌──────────────────────────────────────────────┐"),
         magenta("│"),
         bright("Clawra Selfie"),
         magenta("│"),
         magenta("└──────────────────────────────────────────────┘"),
-        cyan("xAI Grok Imagine"),
-        cyan("fal.ai"),
+        cyan("Gemini Flash Image"),
+        cyan("OpenRouter"),
     );
 }
 

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="claw" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e94560"/>
+      <stop offset="100%" style="stop-color:#ff6b6b"/>
+    </linearGradient>
+    <linearGradient id="lens" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#533483"/>
+      <stop offset="100%" style="stop-color:#e94560"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="400" height="400" rx="48" fill="url(#bg)"/>
+  <!-- Camera body -->
+  <rect x="100" y="140" width="200" height="150" rx="20" fill="#0f3460" stroke="#e94560" stroke-width="3"/>
+  <!-- Lens ring -->
+  <circle cx="200" cy="215" r="50" fill="none" stroke="url(#lens)" stroke-width="6"/>
+  <circle cx="200" cy="215" r="35" fill="#1a1a2e" stroke="#533483" stroke-width="2"/>
+  <circle cx="200" cy="215" r="20" fill="url(#lens)" opacity="0.8"/>
+  <circle cx="190" cy="205" r="6" fill="white" opacity="0.4"/>
+  <!-- Flash -->
+  <rect x="260" y="155" width="20" height="12" rx="3" fill="#e94560" opacity="0.8"/>
+  <!-- Claw marks (3 diagonal slashes) -->
+  <g stroke="url(#claw)" stroke-width="5" stroke-linecap="round" opacity="0.9">
+    <line x1="80" y1="80" x2="140" y2="130"/>
+    <line x1="100" y1="70" x2="160" y2="120"/>
+    <line x1="120" y1="60" x2="180" y2="110"/>
+  </g>
+  <!-- Selfie sparkle -->
+  <g fill="#ff6b6b">
+    <circle cx="310" cy="100" r="4"/>
+    <circle cx="330" cy="80" r="2.5"/>
+    <circle cx="290" cy="85" r="3"/>
+  </g>
+  <!-- Text -->
+  <text x="200" y="340" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="36" font-weight="700" fill="white" letter-spacing="2">CLAWRA</text>
+  <text x="200" y="365" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="400" fill="#e94560" letter-spacing="4">ZEROCLAW</text>
+</svg>
