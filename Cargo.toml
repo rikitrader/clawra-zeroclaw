@@ -1,0 +1,25 @@
+[package]
+name = "clawra-zeroclaw"
+version = "1.0.0"
+edition = "2021"
+description = "Clawra selfie skill for ZeroClaw — xAI Grok Imagine image generation"
+license = "MIT"
+repository = "https://github.com/rikitrader/clawra-zeroclaw"
+keywords = ["zeroclaw", "grok", "xai", "selfie", "ai-agent"]
+categories = ["command-line-utilities"]
+
+[[bin]]
+name = "clawra"
+path = "src/main.rs"
+
+[dependencies]
+ureq = { version = "2", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true
+codegen-units = 1
