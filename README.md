@@ -6,7 +6,7 @@
 <h3 align="center">Selfie Superpowers for AI Agents</h3>
 
 <p align="center">
-  <a href="https://github.com/rikitrader/clawra-zeroclaw/releases"><img src="https://img.shields.io/badge/version-1.0.0-ff2d55?style=flat-square" alt="Version"></a>
+  <a href="https://github.com/rikitrader/clawra-zeroclaw/releases"><img src="https://img.shields.io/badge/version-1.1.0-ff2d55?style=flat-square" alt="Version"></a>
   <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/rust-2021-ff6b81?style=flat-square&logo=rust" alt="Rust"></a>
   <a href="https://github.com/zeroclaw-labs/zeroclaw"><img src="https://img.shields.io/badge/runtime-ZeroClaw-7b2ff7?style=flat-square" alt="ZeroClaw"></a>
   <a href="https://openrouter.ai"><img src="https://img.shields.io/badge/images-OpenRouter-c471f5?style=flat-square" alt="OpenRouter"></a>

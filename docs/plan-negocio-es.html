@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLAWRA — Plan de Negocio + Roadmap Tecnico</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #fff; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+  .hero { text-align: center; padding: 60px 0 20px; }
+  .hero h1 { font-size: 3.5rem; font-weight: 900; background: linear-gradient(135deg, #ff6b9d, #c44dff, #6b5ce7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero .sub { font-size: 1.2rem; color: #888; margin-top: 10px; font-weight: 300; }
+  .hero .tag { font-size: 0.9rem; color: #c44dff; margin-top: 16px; padding: 6px 20px; border: 1px solid #c44dff33; border-radius: 20px; display: inline-block; }
+
+  .sec { margin: 50px 0; }
+  .sec-title { font-size: 1.6rem; font-weight: 800; color: #c44dff; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+  .sec-title .n { background: #c44dff22; color: #c44dff; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; flex-shrink: 0; }
+
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+  .c { background: #141414; border: 1px solid #222; border-radius: 16px; padding: 24px; }
+  .c.hl { border-color: #c44dff44; background: linear-gradient(135deg, #1a1025, #141414); }
+  .c.pk { border-color: #ff6b9d44; background: linear-gradient(135deg, #1a1018, #141414); }
+  .c.gn { border-color: #22c55e44; background: linear-gradient(135deg, #0a1a0f, #141414); }
+  .c h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 10px; }
+  .c p { color: #999; font-size: 0.88rem; line-height: 1.7; }
+  .c .big { font-size: 2.5rem; font-weight: 900; color: #ff6b9d; }
+  .c .lbl { font-size: 0.75rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+
+  .div { height: 1px; background: linear-gradient(to right, transparent, #333, transparent); margin: 50px 0; }
+
+  /* Timeline */
+  .tl { position: relative; padding-left: 40px; }
+  .tl::before { content: ''; position: absolute; left: 14px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #c44dff, #ff6b9d, #22c55e); }
+  .tl-item { position: relative; margin-bottom: 30px; }
+  .tl-item::before { content: ''; position: absolute; left: -33px; top: 6px; width: 16px; height: 16px; border-radius: 50%; border: 3px solid; }
+  .tl-item.now::before { border-color: #22c55e; background: #22c55e33; }
+  .tl-item.next::before { border-color: #c44dff; background: #c44dff33; }
+  .tl-item.future::before { border-color: #ff6b9d; background: #ff6b9d33; }
+  .tl-item.far::before { border-color: #ffb700; background: #ffb70033; }
+  .tl-head { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+  .tl-time { font-size: 0.8rem; font-weight: 600; margin-bottom: 8px; }
+  .tl-time.green { color: #22c55e; }
+  .tl-time.purple { color: #c44dff; }
+  .tl-time.pink { color: #ff6b9d; }
+  .tl-time.gold { color: #ffb700; }
+  .tl-body { color: #999; font-size: 0.85rem; line-height: 1.7; }
+  .tl-tasks { margin-top: 8px; padding-left: 16px; }
+  .tl-tasks li { color: #bbb; font-size: 0.85rem; margin: 4px 0; }
+  .tl-tasks li .done { color: #22c55e; }
+  .tl-tasks li .todo { color: #c44dff; }
+
+  /* Tech Stack */
+  .tech { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: #1a1a1a; border-radius: 12px; margin: 8px 0; border-left: 3px solid; }
+  .tech.rust { border-color: #ff6b3d; }
+  .tech.ts { border-color: #3178c6; }
+  .tech.sol { border-color: #9945ff; }
+  .tech.tg { border-color: #26a5e4; }
+  .tech.py { border-color: #3776ab; }
+  .tech.react { border-color: #61dafb; }
+  .tech .lang { font-weight: 700; font-size: 0.9rem; min-width: 120px; }
+  .tech .lang.rust-c { color: #ff6b3d; }
+  .tech .lang.ts-c { color: #3178c6; }
+  .tech .lang.sol-c { color: #9945ff; }
+  .tech .lang.tg-c { color: #26a5e4; }
+  .tech .lang.py-c { color: #3776ab; }
+  .tech .lang.react-c { color: #61dafb; }
+  .tech .desc { color: #999; font-size: 0.85rem; flex: 1; }
+  .tech .status { font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 10px; }
+  .tech .status.done { background: #22c55e22; color: #22c55e; }
+  .tech .status.build { background: #c44dff22; color: #c44dff; }
+  .tech .status.plan { background: #ffb70022; color: #ffb700; }
+
+  /* Architecture Diagram */
+  .arch { background: #0d0d0d; border: 1px solid #222; border-radius: 16px; padding: 30px; overflow-x: auto; }
+  .arch-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 12px 0; flex-wrap: wrap; }
+  .arch-box { padding: 12px 18px; border-radius: 10px; text-align: center; min-width: 130px; font-size: 0.8rem; }
+  .arch-box.user { background: #26a5e422; border: 1px solid #26a5e444; color: #26a5e4; }
+  .arch-box.bot { background: #ff6b3d22; border: 1px solid #ff6b3d44; color: #ff6b3d; }
+  .arch-box.ai { background: #c44dff22; border: 1px solid #c44dff44; color: #c44dff; }
+  .arch-box.pay { background: #22c55e22; border: 1px solid #22c55e44; color: #22c55e; }
+  .arch-box.chain { background: #9945ff22; border: 1px solid #9945ff44; color: #9945ff; }
+  .arch-box.store { background: #ff6b9d22; border: 1px solid #ff6b9d44; color: #ff6b9d; }
+  .arch-arrow { color: #444; font-size: 1.2rem; }
+  .arch-label { font-size: 0.7rem; color: #555; text-align: center; }
+
+  /* File Tree */
+  .tree { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.82rem; color: #aaa; line-height: 1.8; background: #0d0d0d; border: 1px solid #222; border-radius: 12px; padding: 20px 24px; }
+  .tree .dir { color: #c44dff; font-weight: 600; }
+  .tree .file { color: #ccc; }
+  .tree .new { color: #22c55e; }
+  .tree .exist { color: #888; }
+  .tree .comment { color: #555; }
+
+  /* Table */
+  .tbl { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  .tbl th { text-align: left; color: #666; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; border-bottom: 1px solid #222; }
+  .tbl td { padding: 12px 14px; border-bottom: 1px solid #1a1a1a; font-size: 0.85rem; color: #ccc; }
+  .tbl .m { color: #22c55e; font-weight: 700; }
+  .tbl .u { color: #c44dff; }
+
+  /* Pills */
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .pill { padding: 3px 10px; border-radius: 15px; font-size: 0.72rem; font-weight: 600; }
+  .pill.r { background: #ff6b3d22; color: #ff6b3d; border: 1px solid #ff6b3d44; }
+  .pill.t { background: #3178c622; color: #3178c6; border: 1px solid #3178c644; }
+  .pill.s { background: #9945ff22; color: #9945ff; border: 1px solid #9945ff44; }
+  .pill.g { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
+
+  /* Step boxes */
+  .step { display: flex; gap: 20px; margin: 16px 0; padding: 20px; background: #141414; border-radius: 14px; border-left: 3px solid #c44dff; }
+  .step-n { font-size: 1.8rem; font-weight: 900; color: #c44dff; min-width: 45px; }
+  .step-c h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+  .step-c p { color: #888; font-size: 0.83rem; line-height: 1.6; }
+  .step-c code { background: #0d0d0d; color: #ff6b9d; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+
+  @media (max-width: 768px) {
+    .g2, .g3, .g4 { grid-template-columns: 1fr; }
+    .arch-row { flex-direction: column; }
+    .hero h1 { font-size: 2.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>CLAWRA</h1>
+    <div class="sub">Plan de Negocio + Roadmap Tecnico Detallado</div>
+    <div class="tag">Bot de IA + Generacion de Imagenes + Paywall con Token Propio</div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ========== SECCION 1: QUE ES ========== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">1</span> Que es CLAWRA?</div>
+    <div class="g3">
+      <div class="c pk">
+        <h3>Bot de Telegram</h3>
+        <p>Una novia virtual con IA que chatea en espanol/ingles. Tiene personalidad propia, responde con delays como humana real, y recuerda conversaciones anteriores.</p>
+      </div>
+      <div class="c hl">
+        <h3>Fotos con IA</h3>
+        <p>Los usuarios piden selfies y la IA genera fotos unicas en tiempo real. Usa multiples modelos con fallback automatico si uno falla.</p>
+      </div>
+      <div class="c gn">
+        <h3>Monetizacion</h3>
+        <p>Las primeras 3 fotos son gratis. Despues, las fotos salen borrosas y hay que pagar para desbloquearlas. Primero con Telegram Stars, despues con tu propia crypto.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ========== SECCION 2: COMO FUNCIONA ========== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">2</span> Como Funciona (Flujo del Usuario)</div>
+
+    <div class="arch">
+      <div class="arch-label" style="margin-bottom: 12px;">FLUJO PRINCIPAL</div>
+      <div class="arch-row">
+        <div class="arch-box user"><strong>Usuario</strong><br>Escribe en Telegram</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box bot"><strong>CLAWRA Bot</strong><br>Rust + Tokio</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box ai"><strong>OpenRouter</strong><br>LLM + Imagenes</div>
+      </div>
+      <div class="arch-label" style="margin: 16px 0 8px;">FLUJO DE PAGO (despues de 3 fotos gratis)</div>
+      <div class="arch-row">
+        <div class="arch-box bot"><strong>Bot genera foto</strong><br>Imagen original</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box store"><strong>Blur + Guardar</strong><br>Foto borrosa</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box user"><strong>Usuario ve</strong><br>Preview borroso</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box pay"><strong>Paga</strong><br>Stars o $CLAWRA</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box bot"><strong>Desbloqueo</strong><br>Foto clara enviada</div>
+      </div>
+    </div>
+
+    <div class="g2" style="margin-top: 20px;">
+      <div class="c gn">
+        <h3 style="color: #22c55e;">Fotos 1-3: GRATIS</h3>
+        <p>El usuario recibe la foto clara directamente. Esto crea el "hook" — ve la calidad y quiere mas.</p>
+      </div>
+      <div class="c pk">
+        <h3 style="color: #ff6b9d;">Foto 4+: PAGAR</h3>
+        <p>La foto se genera pero se envia borrosa. Se muestra una factura de Telegram Stars (o token). Al pagar, se envia la foto original.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ========== SECCION 3: ARQUITECTURA TECNICA ========== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">3</span> Arquitectura Tecnica (Que Hay Que Construir)</div>
+
+    <div class="arch" style="margin-bottom: 20px;">
+      <div class="arch-label" style="margin-bottom: 16px;">DIAGRAMA DE COMPONENTES</div>
+      <div class="arch-row">
+        <div class="arch-box user" style="min-width: 160px;">
+          <strong>Telegram</strong><br>
+          Mensajes + Pagos<br>
+          <span style="font-size: 0.7rem; color: #26a5e488;">API Bot gratis</span>
+        </div>
+        <div class="arch-arrow">⇄</div>
+        <div class="arch-box bot" style="min-width: 220px;">
+          <strong>CLAWRA Bot (Rust)</strong><br>
+          Chat Loop + Paywall<br>
+          Cognitive Engine<br>
+          <span style="font-size: 0.7rem; color: #ff6b3d88;">Binario unico ~4MB</span>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box ai" style="min-width: 160px;">
+          <strong>OpenRouter API</strong><br>
+          Gemini (chat)<br>
+          Gemini/Flux (fotos)<br>
+          <span style="font-size: 0.7rem; color: #c44dff88;">~$0.02 por foto</span>
+        </div>
+      </div>
+      <div class="arch-row" style="margin-top: 16px;">
+        <div class="arch-box store" style="min-width: 160px;">
+          <strong>Estado Local</strong><br>
+          JSON en /tmp/<br>
+          <span style="font-size: 0.7rem; color: #ff6b9d88;">Paywall + Emociones</span>
+        </div>
+        <div class="arch-arrow">⇄</div>
+        <div class="arch-box bot" style="min-width: 220px; opacity: 0.5;">
+          <strong>CLAWRA Bot</strong><br>
+          <span style="font-size: 0.7rem;">Lee/escribe estado</span>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box chain" style="min-width: 160px;">
+          <strong>Solana Blockchain</strong><br>
+          Token $CLAWRA<br>
+          Verificacion de pagos<br>
+          <span style="font-size: 0.7rem; color: #9945ff88;">FASE 3 (futuro)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-title" style="font-size: 1.2rem; margin-top: 30px;"><span class="n">⚙</span> Stack Tecnologico Detallado</div>
+
+    <div class="tech rust">
+      <div class="lang rust-c">Rust</div>
+      <div class="desc"><strong>El bot principal.</strong> Todo el backend: chat loop, generacion de imagenes, paywall, sistema cognitivo. Un solo binario, super rapido, 0 dependencias en runtime.</div>
+      <div class="status done">HECHO</div>
+    </div>
+
+    <div class="tech tg">
+      <div class="lang tg-c">Telegram API</div>
+      <div class="desc"><strong>Canal de comunicacion.</strong> Bot API para mensajes, fotos, pagos (Stars), typing indicators. Gratis, sin limites de mensajes.</div>
+      <div class="status done">HECHO</div>
+    </div>
+
+    <div class="tech ts">
+      <div class="lang ts-c">OpenRouter</div>
+      <div class="desc"><strong>Cerebro de IA.</strong> Envia mensajes a modelos como Gemini Flash (chat) y Gemini/Flux (imagenes). Una sola API key para todos los modelos.</div>
+      <div class="status done">HECHO</div>
+    </div>
+
+    <div class="tech sol">
+      <div class="lang sol-c">Solana (Rust)</div>
+      <div class="desc"><strong>Token $CLAWRA.</strong> Crear token SPL en Solana. Verificar pagos on-chain. Pool de liquidez en Raydium. Smart contract simple.</div>
+      <div class="status build">FASE 3</div>
+    </div>
+
+    <div class="tech react">
+      <div class="lang react-c">Web (React)</div>
+      <div class="desc"><strong>Landing page + dashboard.</strong> Pagina web para el token, estadisticas del bot, y compra directa de tokens. Opcional pero ayuda al marketing.</div>
+      <div class="status plan">FASE 4</div>
+    </div>
+
+    <div class="tech py">
+      <div class="lang py-c">Python</div>
+      <div class="desc"><strong>Scripts de marketing.</strong> Bots de redes sociales, analytics, web scraping para crecimiento. Secundario al producto principal.</div>
+      <div class="status plan">FASE 4</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ========== SECCION 4: ESTRUCTURA DE ARCHIVOS ========== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">4</span> Estructura del Proyecto (Archivos)</div>
+
+    <div class="g2">
+      <div>
+        <h3 style="color: #22c55e; margin-bottom: 12px;">Ya Construido (HECHO)</h3>
+        <div class="tree">
+<span class="dir">clawra-zeroclaw/</span>
+├── <span class="dir">src/</span>
+│   ├── <span class="exist">main.rs</span>          <span class="comment">← Punto de entrada CLI</span>
+│   ├── <span class="exist">chat.rs</span>          <span class="comment">← Loop principal del bot</span>
+│   │                       <span class="comment">   Telegram polling, mensajes,</span>
+│   │                       <span class="comment">   paywall, typing delays</span>
+│   ├── <span class="exist">selfie.rs</span>        <span class="comment">← Generacion de imagenes IA</span>
+│   │                       <span class="comment">   3 modelos con fallback</span>
+│   ├── <span class="exist">paywall.rs</span>       <span class="comment">← Sistema de pago</span>
+│   │                       <span class="comment">   Free tier, blur, Stars</span>
+│   ├── <span class="exist">cognitive.rs</span>     <span class="comment">← Motor cognitivo</span>
+│   │                       <span class="comment">   Emociones, memoria, prediccion</span>
+│   ├── <span class="dir">life/</span>
+│   │   └── <span class="exist">emotional.rs</span> <span class="comment">← Estado emocional</span>
+│   ├── <span class="dir">cosmic/</span>
+│   │   ├── <span class="exist">modulation.rs</span><span class="comment">← Modulador emocional</span>
+│   │   ├── <span class="exist">free_energy.rs</span><span class="comment">← Predicciones</span>
+│   │   └── <span class="exist">self_model.rs</span><span class="comment">← Autoconciencia</span>
+│   ├── <span class="dir">continuity/</span>
+│   │   ├── <span class="exist">narrative.rs</span> <span class="comment">← Historial de episodios</span>
+│   │   └── <span class="exist">preferences.rs</span><span class="comment">← Preferencias del usuario</span>
+│   └── <span class="exist">lib.rs</span>           <span class="comment">← Modulos exportados</span>
+├── <span class="exist">Cargo.toml</span>           <span class="comment">← Dependencias Rust</span>
+└── <span class="dir">docs/</span>
+    └── <span class="exist">business-plan.html</span>
+        </div>
+      </div>
+      <div>
+        <h3 style="color: #c44dff; margin-bottom: 12px;">Por Construir (SIGUIENTE)</h3>
+        <div class="tree">
+<span class="dir">clawra-zeroclaw/</span>
+├── <span class="dir">src/</span>
+│   ├── <span class="new">token.rs</span>         <span class="comment">← NUEVO: Verificacion on-chain</span>
+│   │                       <span class="comment">   Solana RPC, verificar pagos,</span>
+│   │                       <span class="comment">   wallet del bot</span>
+│   ├── <span class="new">subscription.rs</span> <span class="comment">← NUEVO: Suscripciones mensuales</span>
+│   │                       <span class="comment">   Tier gratis, basico, premium</span>
+│   └── <span class="file">chat.rs</span>          <span class="comment">← MODIFICAR: Agregar token</span>
+│                           <span class="comment">   como opcion de pago</span>
+│
+<span class="dir">clawra-web/</span>              <span class="comment">← NUEVO PROYECTO</span>
+├── <span class="dir">src/</span>
+│   ├── <span class="new">App.tsx</span>          <span class="comment">← Landing page del token</span>
+│   ├── <span class="new">Dashboard.tsx</span>    <span class="comment">← Stats del bot (usuarios,</span>
+│   │                       <span class="comment">   revenue, fotos generadas)</span>
+│   └── <span class="new">BuyToken.tsx</span>     <span class="comment">← Widget de compra directa</span>
+│
+<span class="dir">token/</span>                   <span class="comment">← NUEVO: Solana token config</span>
+├── <span class="new">create-token.sh</span>     <span class="comment">← Script para crear SPL token</span>
+├── <span class="new">add-liquidity.sh</span>    <span class="comment">← Agregar liquidez en Raydium</span>
+└── <span class="new">metadata.json</span>       <span class="comment">← Nombre, simbolo, imagen</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ========== SECCION 5: ROADMAP DETALLADO ========== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">5</span> Roadmap Detallado</div>
+
+    <div class="tl">
+
+      <!-- FASE 1 -->
+      <div class="tl-item now">
+        <div class="tl-head">FASE 1: Lanzamiento con Telegram Stars</div>
+        <div class="tl-time green">AHORA — Semana 1-2 (YA CONSTRUIDO)</div>
+        <div class="tl-body">El bot ya funciona. El paywall ya esta activo. Solo falta ponerlo en produccion y empezar a traer usuarios.</div>
+        <ul class="tl-tasks">
+          <li><span class="done">✓</span> Bot de Telegram funcionando</li>
+          <li><span class="done">✓</span> Chat con IA (Gemini Flash)</li>
+          <li><span class="done">✓</span> Generacion de selfies con IA</li>
+          <li><span class="done">✓</span> Paywall: 3 fotos gratis, blur despues</li>
+          <li><span class="done">✓</span> Pagos con Telegram Stars (50 Stars = ~$1)</li>
+          <li><span class="done">✓</span> Typing delays (se siente humana)</li>
+          <li><span class="done">✓</span> Mensajes de acknowledgment en espanol</li>
+          <li><span class="done">✓</span> Motor cognitivo (emociones, memoria)</li>
+          <li><span class="todo">→</span> Desplegar en VPS ($5/mes en Hetzner o Fly.io)</li>
+          <li><span class="todo">→</span> Configurar dominio y SSL para webhook (opcional)</li>
+          <li><span class="todo">→</span> Crear canal de Telegram para anuncios</li>
+        </ul>
+        <div class="pills" style="margin-top: 10px;">
+          <span class="pill r">Rust</span>
+          <span class="pill t">Telegram API</span>
+          <span class="pill g">$0 costo adicional</span>
+        </div>
+      </div>
+
+      <!-- FASE 2 -->
+      <div class="tl-item next">
+        <div class="tl-head">FASE 2: Crecimiento y Comunidad</div>
+        <div class="tl-time purple">Semana 3-6</div>
+        <div class="tl-body">Construir audiencia antes de lanzar el token. El token sin comunidad no vale nada.</div>
+        <ul class="tl-tasks">
+          <li><span class="todo">→</span> <strong>Sistema de referidos:</strong> Invita 3 amigos = 1 foto gratis extra</li>
+          <li><span class="todo">→</span> <strong>Canal de Telegram:</strong> Publicar teasers diarios (fotos censuradas)</li>
+          <li><span class="todo">→</span> <strong>Instagram:</strong> Cuenta de "Clawra" con fotos generadas (censuradas)</li>
+          <li><span class="todo">→</span> <strong>Twitter/X:</strong> Engagement con comunidad crypto + AI</li>
+          <li><span class="todo">→</span> <strong>Metricas:</strong> Tracking de usuarios activos, conversion rate, revenue</li>
+          <li><span class="todo">→</span> <strong>Mejoras al bot:</strong> Mas personalidad, audio messages, stickers</li>
+          <li><span class="todo">→</span> <strong>META: 500 usuarios activos antes de Fase 3</strong></li>
+        </ul>
+        <div class="pills" style="margin-top: 10px;">
+          <span class="pill r">Rust (referidos)</span>
+          <span class="pill t">Telegram</span>
+        </div>
+      </div>
+
+      <!-- FASE 3 -->
+      <div class="tl-item next">
+        <div class="tl-head">FASE 3: Lanzamiento del Token $CLAWRA</div>
+        <div class="tl-time purple">Semana 7-10</div>
+        <div class="tl-body">Crear y lanzar el token en Solana. Migrar el paywall de Stars a $CLAWRA. Los usuarios ahora pagan con tu crypto.</div>
+        <ul class="tl-tasks">
+          <li><span class="todo">→</span> <strong>Crear token SPL:</strong> <code>spl-token create-token</code> en Solana</li>
+          <li><span class="todo">→</span> <strong>Metadata:</strong> Nombre "$CLAWRA", simbolo, logo, descripcion</li>
+          <li><span class="todo">→</span> <strong>Liquidez:</strong> Crear pool en Raydium (SOL/$CLAWRA)</li>
+          <li><span class="todo">→</span> <strong>Bot integration (Rust):</strong>
+            <br>— Crear <code>src/token.rs</code> — modulo de verificacion on-chain
+            <br>— Usar <code>solana-client</code> crate para conectar a Solana RPC
+            <br>— Bot genera wallet unica por usuario
+            <br>— Monitorear transacciones entrantes
+            <br>— Verificar monto correcto → desbloquear foto</li>
+          <li><span class="todo">→</span> <strong>Dual payment:</strong> Ofrecer Stars O $CLAWRA (usuario elige)</li>
+          <li><span class="todo">→</span> <strong>Airdrop:</strong> Regalar tokens a los primeros 500 usuarios</li>
+          <li><span class="todo">→</span> <strong>Anuncio:</strong> Tweet + Telegram post del token launch</li>
+        </ul>
+        <div class="pills" style="margin-top: 10px;">
+          <span class="pill r">Rust (Solana client)</span>
+          <span class="pill s">Solana CLI</span>
+          <span class="pill g">~$5 costo del token</span>
+        </div>
+      </div>
+
+      <!-- FASE 4 -->
+      <div class="tl-item future">
+        <div class="tl-head">FASE 4: Funciones Premium</div>
+        <div class="tl-time pink">Mes 3-6</div>
+        <div class="tl-body">Agregar mas formas de gastar tokens y mas contenido premium.</div>
+        <ul class="tl-tasks">
+          <li><span class="todo">→</span> <strong>Suscripcion mensual:</strong> X tokens/mes = fotos ilimitadas</li>
+          <li><span class="todo">→</span> <strong>Mensajes de voz:</strong> Text-to-speech con voz sexy (ElevenLabs)</li>
+          <li><span class="todo">→</span> <strong>Videos cortos:</strong> Generacion de video con IA (Runway/Kling)</li>
+          <li><span class="todo">→</span> <strong>Personalizacion:</strong> Usuario elige look, ropa, escenario</li>
+          <li><span class="todo">→</span> <strong>Landing page web:</strong> React + Next.js con info del token y compra</li>
+          <li><span class="todo">→</span> <strong>Dashboard:</strong> Estadisticas en tiempo real del bot</li>
+          <li><span class="todo">→</span> <strong>Burn mechanism:</strong> Quemar 1% de tokens por cada desbloqueo</li>
+        </ul>
+        <div class="pills" style="margin-top: 10px;">
+          <span class="pill r">Rust</span>
+          <span class="pill t">TypeScript/React</span>
+          <span class="pill s">Solana</span>
+        </div>
+      </div>
+
+      <!-- FASE 5 -->
+      <div class="tl-item far">
+        <div class="tl-head">FASE 5: Plataforma Multi-Persona</div>
+        <div class="tl-time gold">Mes 6-12</div>
+        <div class="tl-body">De un bot a una plataforma. Otros creadores pueden lanzar sus propias AI personas usando tu infraestructura.</div>
+        <ul class="tl-tasks">
+          <li><span class="todo">→</span> <strong>API publica:</strong> Otros devs crean bots usando tu engine</li>
+          <li><span class="todo">→</span> <strong>Marketplace:</strong> Usuarios eligen entre multiples AI personas</li>
+          <li><span class="todo">→</span> <strong>Revenue share:</strong> Creadores ganan 70%, plataforma 20%, burn 10%</li>
+          <li><span class="todo">→</span> <strong>Multi-plataforma:</strong> Discord, WhatsApp, web chat</li>
+          <li><span class="todo">→</span> <strong>DAO:</strong> Holders de $CLAWRA votan en decisiones de la plataforma</li>
+        </ul>
+        <div class="pills" style="margin-top: 10px;">
+          <span class="pill r">Rust</span>
+          <span class="pill t">TypeScript</span>
+          <span class="pill s">Solana (DAO)</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ========== SECCION 6: QUE HAY QUE PROGRAMAR EN CADA FASE ========== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">6</span> Que Hay Que Programar (Detalle por Fase)</div>
+
+    <!-- FASE 1 DETAIL -->
+    <div class="c" style="margin-bottom: 20px; border-left: 3px solid #22c55e;">
+      <div class="lbl" style="color: #22c55e;">FASE 1 — YA HECHO</div>
+      <h3>Lenguaje: Rust</h3>
+      <table class="tbl">
+        <tr><th>Componente</th><th>Archivo</th><th>Que Hace</th><th>Estado</th></tr>
+        <tr><td>Chat Loop</td><td><code>chat.rs</code></td><td>Polling de Telegram, procesar mensajes, enviar respuestas con delays</td><td style="color: #22c55e;">HECHO</td></tr>
+        <tr><td>Selfie Engine</td><td><code>selfie.rs</code></td><td>Genera imagenes via OpenRouter. 3 modelos con fallback automatico.</td><td style="color: #22c55e;">HECHO</td></tr>
+        <tr><td>Paywall</td><td><code>paywall.rs</code></td><td>Tracking de fotos gratis, blur de imagenes, invoices de Stars</td><td style="color: #22c55e;">HECHO</td></tr>
+        <tr><td>Cerebro IA</td><td><code>cognitive.rs</code></td><td>Emociones, memoria, predicciones, preferencias del usuario</td><td style="color: #22c55e;">HECHO</td></tr>
+        <tr><td>Persona</td><td><code>chat.rs</code></td><td>System prompt con personalidad, constitucion, leyes</td><td style="color: #22c55e;">HECHO</td></tr>
+      </table>
+    </div>
+
+    <!-- FASE 2 DETAIL -->
+    <div class="c" style="margin-bottom: 20px; border-left: 3px solid #c44dff;">
+      <div class="lbl" style="color: #c44dff;">FASE 2 — CRECIMIENTO</div>
+      <h3>Lenguaje: Rust + Marketing manual</h3>
+      <table class="tbl">
+        <tr><th>Componente</th><th>Archivo</th><th>Que Hace</th><th>Esfuerzo</th></tr>
+        <tr><td>Referidos</td><td><code>referral.rs</code> (nuevo)</td><td>Tracking de invitaciones. Deep links de Telegram. Bonus de fotos gratis.</td><td style="color: #c44dff;">~4 horas</td></tr>
+        <tr><td>Analytics</td><td><code>stats.rs</code> (nuevo)</td><td>Contar usuarios, mensajes/dia, selfies, conversion rate, revenue</td><td style="color: #c44dff;">~2 horas</td></tr>
+        <tr><td>Comandos</td><td><code>chat.rs</code> (editar)</td><td>Agregar /stats, /invite, /balance, /help</td><td style="color: #c44dff;">~2 horas</td></tr>
+      </table>
+    </div>
+
+    <!-- FASE 3 DETAIL -->
+    <div class="c" style="margin-bottom: 20px; border-left: 3px solid #9945ff;">
+      <div class="lbl" style="color: #9945ff;">FASE 3 — TOKEN $CLAWRA</div>
+      <h3>Lenguaje: Rust + Solana CLI</h3>
+      <table class="tbl">
+        <tr><th>Componente</th><th>Que Hacer</th><th>Herramientas</th><th>Esfuerzo</th></tr>
+        <tr><td>Crear Token</td><td>Ejecutar <code>spl-token create-token</code> y <code>spl-token create-account</code></td><td>Solana CLI, Phantom wallet</td><td style="color: #9945ff;">~1 hora</td></tr>
+        <tr><td>Metadata</td><td>Subir nombre, simbolo, logo a Metaplex</td><td>Metaplex CLI o Sugar</td><td style="color: #9945ff;">~1 hora</td></tr>
+        <tr><td>Liquidez</td><td>Crear pool SOL/$CLAWRA en Raydium</td><td>Raydium UI + SOL</td><td style="color: #9945ff;">~2 horas</td></tr>
+        <tr><td>Bot: Verificacion</td><td>Nuevo <code>src/token.rs</code>: conectar a Solana RPC, monitorear transacciones, verificar monto</td><td>Rust: <code>solana-client</code>, <code>solana-sdk</code></td><td style="color: #9945ff;">~8 horas</td></tr>
+        <tr><td>Bot: Wallet</td><td>Generar wallet unica por usuario. Guardar en estado.</td><td>Rust: <code>solana-sdk</code></td><td style="color: #9945ff;">~4 horas</td></tr>
+        <tr><td>Bot: Dual Pay</td><td>Modificar <code>chat.rs</code>: ofrecer Stars o $CLAWRA al usuario</td><td>Rust</td><td style="color: #9945ff;">~3 horas</td></tr>
+      </table>
+      <div style="margin-top: 15px; padding: 12px; background: #9945ff15; border-radius: 10px; border: 1px solid #9945ff33;">
+        <p style="color: #ccc; font-size: 0.85rem;"><strong style="color: #9945ff;">Dependencias Rust nuevas:</strong>
+        <code>solana-client</code>, <code>solana-sdk</code>, <code>spl-token</code> — agregar a <code>Cargo.toml</code></p>
+      </div>
+    </div>
+
+    <!-- FASE 4 DETAIL -->
+    <div class="c" style="margin-bottom: 20px; border-left: 3px solid #ff6b9d;">
+      <div class="lbl" style="color: #ff6b9d;">FASE 4 — PREMIUM</div>
+      <h3>Lenguaje: Rust + TypeScript (React) + Python</h3>
+      <table class="tbl">
+        <tr><th>Componente</th><th>Lenguaje</th><th>Que Hacer</th><th>Esfuerzo</th></tr>
+        <tr><td>Suscripciones</td><td><span style="color: #ff6b3d;">Rust</span></td><td>Tier system: Free / Basic (50 tokens/mes) / Premium (200 tokens/mes)</td><td style="color: #ff6b9d;">~6 horas</td></tr>
+        <tr><td>Voice messages</td><td><span style="color: #ff6b3d;">Rust</span></td><td>Integrar ElevenLabs API. Generar audio. Enviar via Telegram <code>sendVoice</code></td><td style="color: #ff6b9d;">~8 horas</td></tr>
+        <tr><td>Video generation</td><td><span style="color: #ff6b3d;">Rust</span></td><td>Integrar Runway/Kling API. Generar video corto. Enviar via Telegram.</td><td style="color: #ff6b9d;">~12 horas</td></tr>
+        <tr><td>Landing page</td><td><span style="color: #3178c6;">TypeScript</span></td><td>Next.js + React. Info del token, stats del bot, widget de compra</td><td style="color: #ff6b9d;">~16 horas</td></tr>
+        <tr><td>Dashboard</td><td><span style="color: #3178c6;">TypeScript</span></td><td>Graficas de usuarios, revenue, fotos generadas. Admin panel.</td><td style="color: #ff6b9d;">~12 horas</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ========== SECCION 7: COSTOS Y REVENUE ========== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">7</span> Costos vs Revenue</div>
+    <div class="g2">
+      <div class="c">
+        <h3>Costos Mensuales</h3>
+        <div style="margin-top: 12px;">
+          <div style="display: flex; justify-content: space-between; margin: 10px 0; padding-bottom: 10px; border-bottom: 1px solid #1a1a1a;"><span>OpenRouter (imagenes)</span><span style="color: #ef4444;">$50-200</span></div>
+          <div style="display: flex; justify-content: space-between; margin: 10px 0; padding-bottom: 10px; border-bottom: 1px solid #1a1a1a;"><span>OpenRouter (chat LLM)</span><span style="color: #ef4444;">$20-100</span></div>
+          <div style="display: flex; justify-content: space-between; margin: 10px 0; padding-bottom: 10px; border-bottom: 1px solid #1a1a1a;"><span>VPS (servidor)</span><span style="color: #ef4444;">$5-20</span></div>
+          <div style="display: flex; justify-content: space-between; margin: 10px 0; padding-bottom: 10px; border-bottom: 1px solid #1a1a1a;"><span>Telegram API</span><span style="color: #22c55e;">GRATIS</span></div>
+          <div style="display: flex; justify-content: space-between; margin: 10px 0; padding-bottom: 10px; border-bottom: 1px solid #222;"><span>Solana fees</span><span style="color: #22c55e;">~$1</span></div>
+          <div style="display: flex; justify-content: space-between; margin: 10px 0; font-weight: 700;"><span>TOTAL</span><span style="color: #ff6b9d;">$75-320/mes</span></div>
+        </div>
+      </div>
+      <div class="c hl">
+        <h3>Proyeccion de Revenue</h3>
+        <table class="tbl">
+          <tr><th>Usuarios</th><th>Fotos/Mes</th><th>Revenue/Mes</th><th>Revenue/Ano</th></tr>
+          <tr><td class="u">100</td><td>500</td><td class="m">$350</td><td class="m">$4,200</td></tr>
+          <tr><td class="u">500</td><td>4,000</td><td class="m">$2,800</td><td class="m">$33,600</td></tr>
+          <tr><td class="u">2,000</td><td>20,000</td><td class="m">$14,000</td><td class="m">$168,000</td></tr>
+          <tr><td class="u">10,000</td><td>120,000</td><td class="m">$84,000</td><td class="m">$1,008,000</td></tr>
+        </table>
+        <p style="margin-top: 10px; font-size: 0.8rem; color: #666;">Con token propio: 100% del revenue (sin comision de Telegram)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ========== SECCION 8: RESUMEN EJECUTIVO ========== -->
+  <div class="sec" style="text-align: center; padding: 40px 0;">
+    <h2 style="font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, #ff6b9d, #c44dff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Resumen: Que Necesitas</h2>
+
+    <div class="g4" style="margin-top: 30px; text-align: center;">
+      <div class="c">
+        <div style="font-size: 2rem; margin-bottom: 8px;">🦀</div>
+        <h3 style="color: #ff6b3d;">Rust</h3>
+        <p>El bot principal. Ya esta hecho. Todas las fases usan Rust para el backend.</p>
+      </div>
+      <div class="c">
+        <div style="font-size: 2rem; margin-bottom: 8px;">💎</div>
+        <h3 style="color: #9945ff;">Solana CLI</h3>
+        <p>Para crear el token, agregar liquidez, y configurar metadata. Fase 3.</p>
+      </div>
+      <div class="c">
+        <div style="font-size: 2rem; margin-bottom: 8px;">⚛️</div>
+        <h3 style="color: #61dafb;">React/Next.js</h3>
+        <p>Landing page y dashboard. Opcional. Fase 4. TypeScript.</p>
+      </div>
+      <div class="c">
+        <div style="font-size: 2rem; margin-bottom: 8px;">📱</div>
+        <h3 style="color: #26a5e4;">Telegram</h3>
+        <p>Tu canal de distribucion. Gratis. Ya configurado. Solo necesitas usuarios.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px; padding: 20px; background: #141414; border-radius: 16px; border: 1px solid #22c55e44; display: inline-block;">
+      <p style="font-size: 1.2rem; color: #22c55e; font-weight: 700;">El producto ya esta construido.</p>
+      <p style="color: #888; margin-top: 8px;">El siguiente paso es USUARIOS. Despues TOKEN. Despues ESCALAR.</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -6,6 +6,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-29
+
+### Added
+- Telegram chat loop with consciousness-aware mode (`clawra dev`)
+- PersonaConfig — bot username, names, welcome, ack phrases via env vars
+- Brave Search API integration (BRAVE_API_KEY env, DuckDuckGo fallback)
+- AIEOS identity system wiring (`--identity <path>` flag)
+- Graceful shutdown — saves cognitive + paywall state on Ctrl+C
+- 39 unit tests (paywall, cognitive engine, selfie context)
+- Unified consciousness module (soul, cosmic, continuity, conscience, life)
+
+### Fixed
+- Paywall state persisted to ~/.clawra/ (was /tmp/, lost on reboot)
+- extract_selfie_context no longer destroys words (whole-word filtering)
+- Clippy clean under -D warnings
+
+### Changed
+- chat.rs split into telegram/types, telegram/client, chat/handler, chat/selfie_handler
+- 5 dead config structs removed
+- 3 unused dependencies removed (ureq, uuid, tempfile)
+- 42 consciousness files consolidated into src/consciousness/
+
+### Removed
+- Hardcoded @jennisexybot — replaced with CLAWRA_BOT_USERNAME env var
+- Hardcoded Spanish acknowledgment phrases — configurable via CLAWRA_ACK_PHRASES
+
 ## [1.0.0] - 2026-02-18
 
 ### Added

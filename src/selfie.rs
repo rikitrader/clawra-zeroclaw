@@ -90,7 +90,7 @@ struct ImageUrlData {
 
 
 /// Detect selfie mode from keywords
-fn detect_mode(context: &str) -> &'static str {
+pub fn detect_mode(context: &str) -> &'static str {
     let lower = context.to_lowercase();
 
     let direct_keywords = [
@@ -124,7 +124,7 @@ fn detect_mode(context: &str) -> &'static str {
 }
 
 /// Build the edit prompt based on mode
-fn build_prompt(context: &str, mode: &str) -> String {
+pub fn build_prompt(context: &str, mode: &str) -> String {
     match mode {
         "direct" => format!(
             "Edit this photo: create a close-up selfie of this exact same person at {context}. \
@@ -180,14 +180,21 @@ fn call_openrouter(
         }],
     };
 
-    let response = ureq::post("https://openrouter.ai/api/v1/chat/completions")
-        .set("Authorization", &format!("Bearer {api_key}"))
-        .set("Content-Type", "application/json")
-        .send_json(serde_json::to_value(&request).unwrap())
+    let client = reqwest::blocking::Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(10))
+        .timeout(std::time::Duration::from_secs(180))
+        .build()
+        .map_err(|e| format!("HTTP client error: {e}"))?;
+
+    let response = client
+        .post("https://openrouter.ai/api/v1/chat/completions")
+        .header("Authorization", format!("Bearer {api_key}"))
+        .json(&request)
+        .send()
         .map_err(|e| format!("OpenRouter API error: {e}"))?;
 
     let result: ChatResponse = response
-        .into_json()
+        .json()
         .map_err(|e| format!("Failed to parse response: {e}"))?;
 
     let choice = result.choices.first().ok_or("No choices in API response")?;
@@ -207,7 +214,7 @@ fn call_openrouter(
 
 /// Generate image with automatic model fallback chain.
 /// Tries the primary model first, then sanitized prompt, then fallback models.
-fn generate_image(api_key: &str, prompt: &str, primary_model: &str) -> Result<(String, String, Option<String>), String> {
+pub fn generate_image(api_key: &str, prompt: &str, primary_model: &str) -> Result<(String, String, Option<String>), String> {
     // Attempt 1: primary model with original prompt
     println!("\x1b[32m[INFO]\x1b[0m Trying {primary_model}...");
     if let Some((data_uri, text)) = call_openrouter(api_key, primary_model, prompt)? {
@@ -235,7 +242,7 @@ fn generate_image(api_key: &str, prompt: &str, primary_model: &str) -> Result<(S
 }
 
 /// Decode base64 data URI and save to a temp file, return the file path
-fn save_base64_image(data_uri: &str) -> Result<String, String> {
+pub fn save_base64_image(data_uri: &str) -> Result<String, String> {
     // data:image/png;base64,iVBOR...
     let base64_data = data_uri
         .split(",")

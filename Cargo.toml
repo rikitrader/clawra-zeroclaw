@@ -1,6 +1,6 @@
 [package]
 name = "clawra-zeroclaw"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 description = "Selfie superpowers for ZeroClaw AI agents — OpenRouter image generation with 3-layer safety bypass"
 license = "MIT"
@@ -13,10 +13,21 @@ name = "clawra"
 path = "src/main.rs"
 
 [dependencies]
-ureq = { version = "2", features = ["json"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.8"
+anyhow = "1"
+thiserror = "2"
+chrono = { version = "0.4", features = ["serde"] }
+sha2 = "0.10"
+hex = "0.4"
+parking_lot = "0.12"
+async-trait = "0.1"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+futures-util = "0.3"
+tracing = "0.1"
+image = "0.25"
 
 [profile.release]
 opt-level = "z"

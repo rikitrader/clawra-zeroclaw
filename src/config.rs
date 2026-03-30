@@ -1,8 +1,13 @@
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// Get the ZeroClaw home directory (~/.zeroclaw)
+/// Get the ZeroClaw home directory.
+/// Respects ZEROCLAW_WORKSPACE env var, falls back to ~/.zeroclaw.
 pub fn zeroclaw_dir() -> PathBuf {
+    if let Ok(ws) = std::env::var("ZEROCLAW_WORKSPACE") {
+        return PathBuf::from(ws);
+    }
     let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
     PathBuf::from(home).join(".zeroclaw")
 }
@@ -79,4 +84,66 @@ pub fn merge_skill_config(config_path: &Path, api_key: &str) -> std::io::Result<
     }
 
     write_toml(config_path, &config)
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[allow(dead_code)]
+pub struct LifeConfig {
+    pub dream_interval_secs: Option<u64>,
+    pub initiative_interval_secs: Option<u64>,
+    pub emotional_decay_rate: Option<f64>,
+    pub initiative_model: Option<String>,
+    pub preferred_channel: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[allow(dead_code)]
+pub struct IdentityConfig {
+    pub soul_file: Option<String>,
+    pub name: Option<String>,
+    pub genesis_prompt: Option<String>,
+    #[serde(default = "default_identity_format")]
+    pub format: String,
+    pub aieos_path: Option<String>,
+    pub aieos_inline: Option<String>,
+}
+
+#[allow(dead_code)]
+fn default_identity_format() -> String {
+    "openclaw".to_string()
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
+pub struct ReplicationConfig {
+    pub enabled: bool,
+    pub max_children: usize,
+    pub child_workspace_dir: String,
+}
+
+impl Default for ReplicationConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            max_children: 4,
+            child_workspace_dir: "children".into(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
+pub struct TierModelConfig {
+    pub tier: String,
+    pub provider: String,
+    pub model: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[allow(dead_code)]
+pub struct ModelStrategyConfig {
+    pub enabled: bool,
+    pub tier_models: Vec<TierModelConfig>,
+    pub per_session_budget_usd: Option<f64>,
+    pub per_call_budget_usd: Option<f64>,
 }
